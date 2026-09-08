@@ -27,7 +27,10 @@ export const SocketProvider = ({ children }) => {
       return;
     }
 
-    const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+    const API_BASE_URL = process.env.VITE_API_BASE_URL || 
+                         process.env.NEXT_PUBLIC_API_BASE_URL || 
+                         'http://localhost:5000';
+    
     const newSocket = io(API_BASE_URL, {
       transports: ['websocket'],
       upgrade: false,
@@ -37,7 +40,6 @@ export const SocketProvider = ({ children }) => {
       console.log('Socket connected');
       setConnected(true);
       
-      // Join appropriate rooms based on user role
       if (user.role === 'hospital_staff' && user.linkedHospitalId) {
         newSocket.emit('joinHospitalRoom', user.linkedHospitalId);
       }

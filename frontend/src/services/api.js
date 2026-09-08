@@ -1,7 +1,10 @@
 import axios from 'axios';
 
-// Use environment variable or default
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+// Use VITE_ prefix or custom name (Vite convention)
+// For Create React App, we can use any name as long as it doesn't start with REACT_APP_
+const API_BASE_URL = process.env.VITE_API_BASE_URL || 
+                     process.env.NEXT_PUBLIC_API_BASE_URL || 
+                     'http://localhost:5000';
 
 console.log('API Base URL:', API_BASE_URL);
 
@@ -10,7 +13,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 30000, // 30 seconds for production
+  timeout: 30000,
 });
 
 // Add token to requests from sessionStorage
