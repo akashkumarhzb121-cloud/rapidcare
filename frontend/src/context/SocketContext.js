@@ -28,12 +28,13 @@ export const SocketProvider = ({ children }) => {
     }
 
     const API_BASE_URL = process.env.VITE_API_BASE_URL || 
-                         process.env.NEXT_PUBLIC_API_BASE_URL || 
-                         'http://localhost:5000';
+                         'https://rapidcare-5wzq.onrender.com';
+    
+    console.log('Connecting socket to:', API_BASE_URL);
     
     const newSocket = io(API_BASE_URL, {
-      transports: ['websocket'],
-      upgrade: false,
+      transports: ['websocket', 'polling'],
+      upgrade: true,
     });
 
     newSocket.on('connect', () => {

@@ -1,10 +1,8 @@
 import axios from 'axios';
 
-// Use VITE_ prefix or custom name (Vite convention)
-// For Create React App, we can use any name as long as it doesn't start with REACT_APP_
+// Use environment variable or fallback to production URL
 const API_BASE_URL = process.env.VITE_API_BASE_URL || 
-                     process.env.NEXT_PUBLIC_API_BASE_URL || 
-                     'http://localhost:5000';
+                     'https://rapidcare-5wzq.onrender.com';
 
 console.log('API Base URL:', API_BASE_URL);
 
