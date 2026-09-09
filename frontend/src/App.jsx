@@ -1,14 +1,13 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import { SocketProvider } from './context/SocketContext';
-import './i18n';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import LandingPage from './pages/LandingPage';
-import OperatorDashboard from './pages/OperatorDashboard';
-import HospitalDashboard from './pages/HospitalDashboard';
-import CHWDashboard from './pages/CHWDashboard';
+import { AuthProvider, useAuth } from './context/AuthContext.jsx';
+import { SocketProvider } from './context/SocketContext.jsx';
+import Login from './pages/Login.jsx';
+import Register from './pages/Register.jsx';
+import LandingPage from './pages/LandingPage.jsx';
+import OperatorDashboard from './pages/OperatorDashboard.jsx';
+import HospitalDashboard from './pages/HospitalDashboard.jsx';
+import CHWDashboard from './pages/CHWDashboard.jsx';
 
 const ProtectedRoute = ({ children, roles }) => {
   const { user, loading } = useAuth();
