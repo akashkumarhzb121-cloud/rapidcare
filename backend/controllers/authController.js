@@ -1,13 +1,15 @@
 const User = require('../models/User');
 const Hospital = require('../models/Hospital');
+const Facility = require('../models/Facility');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
 const register = async (req, res) => {
   try {
-    const { name, email, password, role, hospitalId } = req.body;
+    const { name, email, password, role, hospitalId, facilityId } = req.body;
     
     // Validate role
-    if (!['ambulance_operator', 'hospital_staff'].includes(role)) {
+    if (!['ambulance_operator', 'hospital_staff', 'community_health_worker'].includes(role)) {
       return res.status(400).json({ error: 'Invalid role' });
     }
     
@@ -19,22 +21,24 @@ const register = async (req, res) => {
     
     // For hospital staff, validate hospital linkage
     let linkedHospitalId = null;
+    let linkedFacilityId = null;
+    
     if (role === 'hospital_staff') {
-      if (!hospitalId) {
-        return res.status(400).json({ error: 'Hospital ID required for hospital staff' });
+      if (!hospitalId && !facilityId) {
+        return res.status(400).json({ error: 'Hospital/Facility ID required for hospital staff' });
       }
       
-      const hospital = await Hospital.findById(hospitalId);
-      if (!hospital) {
-        return res.status(404).json({ error: 'Hospital not found' });
+      const facility = await Facility.findById(facilityId || hospitalId);
+      if (!facility) {
+        return res.status(404).json({ error: 'Facility not found' });
       }
       
-      // Check if hospital already has staff assigned
-      if (hospital.staffUserId) {
-        return res.status(400).json({ error: 'Hospital already has staff assigned' });
-      }
-      
-      linkedHospitalId = hospitalId;
+      linkedFacilityId = facility._id;
+      linkedHospitalId = facility._id;
+    }
+    
+    if (role === 'community_health_worker') {
+      linkedFacilityId = facilityId || null;
     }
     
     // Create new user
@@ -43,14 +47,15 @@ const register = async (req, res) => {
       email,
       password,
       role,
+      linkedFacilityId,
       linkedHospitalId
     });
     
     await user.save();
     
-    // Update hospital with staff user ID if applicable
-    if (role === 'hospital_staff' && linkedHospitalId) {
-      await Hospital.findByIdAndUpdate(linkedHospitalId, { staffUserId: user._id });
+    // Update facility with staff user ID if applicable
+    if (role === 'hospital_staff' && linkedFacilityId) {
+      await Facility.findByIdAndUpdate(linkedFacilityId, { staffUserId: user._id });
     }
     
     // Generate JWT
@@ -64,6 +69,7 @@ const register = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        linkedFacilityId: user.linkedFacilityId,
         linkedHospitalId: user.linkedHospitalId
       }
     });
@@ -77,20 +83,34 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     
+    console.log('\n=== Login Attempt ===');
+    console.log('Email:', email);
+    console.log('Password provided:', password ? 'YES' : 'NO');
+    
     // Find user
     const user = await User.findOne({ email });
     if (!user) {
+      console.log('User not found:', email);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
     
-    // Check password
-    const isPasswordValid = await user.comparePassword(password);
+    console.log('User found:', user.name);
+    console.log('Role:', user.role);
+    
+    // Check password using bcrypt directly
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    console.log('Password valid:', isPasswordValid);
+    
     if (!isPasswordValid) {
+      console.log('Password mismatch for:', email);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
     
     // Generate JWT
     const token = generateToken(user);
+    
+    console.log('Login successful:', user.name);
+    console.log('=== Login Complete ===\n');
     
     res.json({
       message: 'Login successful',
@@ -100,7 +120,9 @@ const login = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        linkedHospitalId: user.linkedHospitalId
+        linkedFacilityId: user.linkedFacilityId,
+        linkedHospitalId: user.linkedHospitalId,
+        languagePreference: user.languagePreference
       }
     });
   } catch (error) {

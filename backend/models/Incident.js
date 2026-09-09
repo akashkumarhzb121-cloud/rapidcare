@@ -26,30 +26,29 @@ const incidentSchema = new mongoose.Schema({
   },
   assignedHospitalId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Hospital',
+    ref: 'Facility',
     default: null
   },
   ambulanceLocation: {
-    lat: {
-      type: Number,
-      required: true
-    },
-    lng: {
-      type: Number,
-      required: true
-    },
-    address: {
-      type: String,
-      default: ''
-    },
-    displayName: {
-      type: String,
-      default: ''
-    }
+    lat: { type: Number, required: true },
+    lng: { type: Number, required: true },
+    address: { type: String, default: '' },
+    displayName: { type: String, default: '' }
   },
   patientLocation: {
     type: String,
     default: ''
+  },
+  // New: Link to Patient and Referral
+  patientId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Patient',
+    default: null
+  },
+  linkedReferral: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Referral',
+    default: null
   },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,

@@ -2,14 +2,15 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
+import './i18n';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import LandingPage from './pages/LandingPage';
 import OperatorDashboard from './pages/OperatorDashboard';
 import HospitalDashboard from './pages/HospitalDashboard';
+import CHWDashboard from './pages/CHWDashboard';
 
-// Protected route wrapper
-const ProtectedRoute = ({ children, requiredRole }) => {
+const ProtectedRoute = ({ children, roles }) => {
   const { user, loading } = useAuth();
   
   if (loading) {
@@ -24,14 +25,10 @@ const ProtectedRoute = ({ children, requiredRole }) => {
     return <Navigate to="/login" replace />;
   }
   
-  // If specific role required and user doesn't match
-  if (requiredRole && user.role !== requiredRole) {
-    // Redirect to their correct dashboard
-    if (user.role === 'ambulance_operator') {
-      return <Navigate to="/operator" replace />;
-    } else if (user.role === 'hospital_staff') {
-      return <Navigate to="/hospital" replace />;
-    }
+  if (roles && !roles.includes(user.role)) {
+    if (user.role === 'ambulance_operator') return <Navigate to="/operator" replace />;
+    if (user.role === 'hospital_staff') return <Navigate to="/hospital" replace />;
+    if (user.role === 'community_health_worker') return <Navigate to="/chw" replace />;
   }
   
   return children;
@@ -43,41 +40,12 @@ function App() {
       <SocketProvider>
         <Router>
           <Routes>
-            {/* Public routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            
-            {/* Landing page - requires auth */}
-            <Route 
-              path="/" 
-              element={
-                <ProtectedRoute>
-                  <LandingPage />
-                </ProtectedRoute>
-              } 
-            />
-            
-            {/* Operator dashboard - requires operator role */}
-            <Route 
-              path="/operator" 
-              element={
-                <ProtectedRoute requiredRole="ambulance_operator">
-                  <OperatorDashboard />
-                </ProtectedRoute>
-              } 
-            />
-            
-            {/* Hospital dashboard - requires hospital_staff role */}
-            <Route 
-              path="/hospital" 
-              element={
-                <ProtectedRoute requiredRole="hospital_staff">
-                  <HospitalDashboard />
-                </ProtectedRoute>
-              } 
-            />
-            
-            {/* Catch all */}
+            <Route path="/" element={<ProtectedRoute><LandingPage /></ProtectedRoute>} />
+            <Route path="/operator" element={<ProtectedRoute roles={['ambulance_operator']}><OperatorDashboard /></ProtectedRoute>} />
+            <Route path="/hospital" element={<ProtectedRoute roles={['hospital_staff']}><HospitalDashboard /></ProtectedRoute>} />
+            <Route path="/chw" element={<ProtectedRoute roles={['community_health_worker']}><CHWDashboard /></ProtectedRoute>} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Router>
