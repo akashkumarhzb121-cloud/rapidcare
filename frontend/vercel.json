@@ -1,13 +1,6 @@
 {
-  "version": 2,
-  "name": "rapidcare-frontend",
-  "buildCommand": "npm run build",
+  "buildCommand": "npm install --legacy-peer-deps && npm run build",
   "outputDirectory": "build",
   "framework": "create-react-app",
-  "rewrites": [
-    {
-      "source": "/((?!api/).*)",
-      "destination": "/index.html"
-    }
-  ]
+  "installCommand": "npm install --legacy-peer-deps"
 }
