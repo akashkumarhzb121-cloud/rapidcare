@@ -1,92 +1,243 @@
-# RapidCare — AI-Powered Care Continuity & Emergency Response Platform for Rural Public Healthcare
+# RapidCare Backend API
 
-RapidCare is a full-stack platform that uses AI-driven triage to route rural patients to the correct level of care — from village sub-centres to district hospitals — tracking them across their journey, with emergency ambulance dispatch as the escalation path for critical cases.
+> Node.js + Express + MongoDB backend microservice for the RapidCare care continuity and emergency response platform.
 
-## 🏗️ Architecture
-Frontend (React) → Backend (Express) → MongoDB
-↓
-Groq AI Triage
-↓
-┌────────────┴────────────┐
-↓ ↓
-Referral Flow Emergency Dispatch
-(Routine/Urgent) (Critical Cases)
+---
 
-text
+## 🏗️ Features
 
-## 🚀 Quick Start
+- 🔐 **Authentication & Authorization:** Secure JWT-based authentication with 3-role Role-Based Access Control (RBAC).
+- 🤖 **AI Medical Triage:** Integrated Groq AI triage engine with keyword-based fallback mechanism.
+- 📍 **Geospatial Intelligence:** Geocoding and Haversine distance ranking for optimal facility routing.
+- 📡 **Real-Time Communication:** Socket.IO websocket rooms partitioned by facility, incident, and user role.
+- 🏥 **Tiered Healthcare Hierarchy:** Multi-tier health facility architecture (Sub-Centre → PHC → Rural Hospital → District Hospital).
+- 🔗 **Automated Incident Escalation:** Auto-creation of emergency incidents from critical referral triggers.
+- 📅 **Automated Follow-ups:** Automated scheduling of follow-up tasks upon referral acceptance.
 
-### Prerequisites
-- Node.js (v18+)
-- MongoDB (local or Atlas)
-- Groq API Key
+---
 
-### Backend Setup
+## 📁 Project Structure
+
+```text
+backend/
+├── models/                     # Mongoose Schemas & Data Models
+│   ├── User.js
+│   ├── Patient.js
+│   ├── Facility.js
+│   ├── Referral.js
+│   ├── Incident.js
+│   └── FollowUpSchedule.js
+├── controllers/                # HTTP Request Handlers
+│   ├── authController.js
+│   ├── incidentController.js
+│   ├── hospitalController.js
+│   └── ...
+├── services/                   # Business & Domain Logic
+│   ├── aiService.js            # Groq AI integration & fallback
+│   ├── locationService.js      # Geocoding & travel time estimation
+│   ├── distanceService.js      # Haversine distance ranking
+│   ├── patientService.js
+│   ├── referralService.js
+│   └── followUpService.js
+├── routes/                     # API Route Definitions
+│   ├── authRoutes.js
+│   ├── patientRoutes.js
+│   ├── referralRoutes.js
+│   ├── facilityRoutes.js
+│   ├── incidentRoutes.js
+│   └── followUpRoutes.js
+├── middleware/                 # Middleware Functions
+│   └── authMiddleware.js       # JWT & RBAC Middleware
+├── server.js                   # Application Entry Point
+└── seedData.js                 # Database Seeding Script
+```
+
+---
+
+## 🔧 Environment Variables
+
+Create a `.env` file in the root directory by copying `.env.example`:
+
 ```bash
-cd backend
-npm install
 cp .env.example .env
-# Edit .env with your values
-node seedData.js  # Seed sample data
-npm run dev
-Frontend Setup
-bash
-cd frontend
+```
+
+| Variable | Description | Default Value |
+| :--- | :--- | :--- |
+| `PORT` | Server listening port | `5000` |
+| `MONGODB_URI` | MongoDB connection string | `mongodb://localhost:27017/rapidcare` |
+| `JWT_SECRET` | Secret key for signing JSON Web Tokens | `replace_with_strong_secret` |
+| `GROQ_API_KEY` | API key for Groq AI service | `gsk_xxxxxxxxxxxxxxxxxxxx` |
+| `CORS_ORIGIN` | Allowed cross-origin frontend URL | `http://localhost:3000` |
+
+```env
+PORT=5000
+MONGODB_URI=mongodb://localhost:27017/rapidcare
+JWT_SECRET=replace_with_strong_secret
+GROQ_API_KEY=gsk_xxxxxxxxxxxxxxxxxxxx
+CORS_ORIGIN=http://localhost:3000
+```
+
+---
+
+## 🚀 Setup & Execution
+
+```bash
+# Install dependencies
 npm install
-cp .env.example .env.local
+
+# Configure environment variables
+cp .env.example .env
+# Edit .env with your environment settings
+
+# Seed database with authentic healthcare facility data
+node seedData.js
+
+# Run development server (with auto-reload)
+npm run dev
+
+# Run production server
 npm start
-🎯 Demo Credentials
-RoleEmailPassword
-Emergency Operatoroperator@rapidcare.compassword123
-Hospital Staffstaff@rapidcare.compassword123
-Community Health Workerchw@rapidcare.compassword123
-📚 API Documentation
-Authentication
-POST /api/auth/register - Register user
+```
 
-POST /api/auth/login - Login
+---
 
-Patients
-POST /api/patients - Register patient (CHW/Operator)
+## 🗄️ Data Models
 
-GET /api/patients/search?q= - Search patients
+### User
+- `name`, `email`, `password` *(hashed with bcrypt)*, `role`
+- **Supported Roles:** `ambulance_operator` | `hospital_staff` | `community_health_worker`
+- `linkedFacilityId` *(staff/CHW)*, `languagePreference`
 
-GET /api/patients/:id/history - Patient history
+### Patient
+- `name`, `age`, `gender`, `village`, `district`, `state`, `phone`
+- `languagePreference`, `chronicConditions[]`, `highRiskFlags[]`
+- `abhaId` *(future ABDM integration)*, `registeredBy`, `registeredAtFacility`
 
-Referrals
-POST /api/referrals - Create referral with AI triage
+### Facility *(Tiered)*
+- **Facility Types:** `sub-centre` | `phc` | `rural-hospital` | `district-hospital`
+- `location`, `address`, `specializations[]`, `totalBeds`, `availableBeds`
+- `medicineStock[]`, `diagnosticServices[]`, `parentFacility`, `staffUserId`
 
-PATCH /api/referrals/:id/status - Update referral status
+### Referral
+- `patientId`, `fromFacilityId`, `toFacilityId`
+- `severity`, `requiredSpecialization`, `referralType`
+- **Status Lifecycle:** `initiated` → `in-transit` → `received` → `completed`
+- `linkedIncident`, `timeline[]`, `isEmergencyFlagged`
 
-GET /api/referrals/facility/:facilityId - Get facility referrals
+### Incident *(Emergency Response)*
+- `patientDescription`, `severity`, `requiredSpecialization`, `aiReasoning`
+- **Status Lifecycle:** `pending` → `matched` → `dispatched` → `completed`
+- `assignedHospitalId`, `ambulanceLocation`, `patientId`, `linkedReferral`
 
-Facilities
-GET /api/facilities - List facilities
+### FollowUpSchedule
+- `patientId`, `referralId`, `condition`, `scheduleType`, `dueDate`
+- **Status Options:** `scheduled` | `completed` | `missed` | `cancelled`
+- `priority`, `assignedTo`
 
-GET /api/facilities/:id/dashboard - Facility dashboard
+---
 
-PATCH /api/facilities/:id/availability - Update availability
+## 📚 API Endpoints
 
-Follow-ups
-GET /api/followups/due - Get due follow-ups
+### Auth Routes
+| Method | Endpoint | Access Level |
+| :--- | :--- | :--- |
+| `POST` | `/api/auth/register` | Public |
+| `POST` | `/api/auth/login` | Public |
 
-PATCH /api/followups/:id/complete - Complete follow-up
+### Patient Routes
+| Method | Endpoint | Access Level |
+| :--- | :--- | :--- |
+| `POST` | `/api/patients` | Authenticated |
+| `GET` | `/api/patients/search?q=` | Authenticated |
+| `GET` | `/api/patients/:id/history` | Authenticated |
 
-Incidents (Existing)
-POST /api/incidents - Create incident (auto from critical referral)
+### Referral Routes
+| Method | Endpoint | Access Level |
+| :--- | :--- | :--- |
+| `POST` | `/api/referrals` | CHW, Operator |
+| `PATCH` | `/api/referrals/:id/status` | Authenticated |
+| `GET` | `/api/referrals/facility/:id?type=incoming` | Authenticated |
+| `GET` | `/api/referrals/facility/:id/stats` | Authenticated |
 
-PATCH /api/incidents/:id/dispatch - Dispatch
+### Incident Routes (Emergency)
+| Method | Endpoint | Access Level |
+| :--- | :--- | :--- |
+| `POST` | `/api/incidents` | Operator |
+| `GET` | `/api/incidents/:id` | Authenticated |
+| `GET` | `/api/incidents/facility/:id` | Authenticated |
+| `PATCH` | `/api/incidents/:id/dispatch` | Operator |
+| `PATCH` | `/api/incidents/:id/complete` | Staff |
 
-PATCH /api/incidents/:id/complete - Complete
+### Facility Routes
+| Method | Endpoint | Access Level |
+| :--- | :--- | :--- |
+| `GET` | `/api/facilities` | Public |
+| `GET` | `/api/facilities/:id/dashboard` | Authenticated |
+| `PATCH` | `/api/facilities/:id/availability` | Staff |
 
-🔒 Security
-JWT authentication
+### Follow-up Routes
+| Method | Endpoint | Access Level |
+| :--- | :--- | :--- |
+| `GET` | `/api/followups/due` | Authenticated |
+| `GET` | `/api/followups/all` | Authenticated |
+| `PATCH` | `/api/followups/:id/complete` | Authenticated |
 
-Role-Based Access Control (3 roles)
+---
 
-bcrypt password hashing
+## 🤖 AI Triage Engine
 
-CORS configuration
+The service in `services/aiService.js` executes structured prompts via the Groq API to obtain structured medical assessments:
 
-📝 License
-MIT License
+```json
+{
+  "severity": "critical | moderate | mild",
+  "requiredSpecialization": "cardiac | trauma | pediatric | general",
+  "aiReasoning": "Concise single-sentence clinical reasoning."
+}
+```
+
+> **Fallback System:** In the event of API downtime or quota limits, a client-side keyword-based classifier automatically activates to keep the triage operational. All AI operations are logged server-side for auditing.
+
+---
+
+## 📡 Real-Time Rooms (Socket.IO)
+
+| Room Identifier | Target Audience |
+| :--- | :--- |
+| `hospital_<facilityId>` | Assigned hospital staff |
+| `facility_<facilityId>` | Hospital staff and assigned CHWs |
+| `incident_<incidentId>` | Emergency operators tracking active incidents |
+| `operator_<userId>` | Specific ambulance operator session |
+
+---
+
+## 🧪 Testing
+
+```bash
+# Health Check Endpoint
+curl http://localhost:5000/health
+
+# Authentication Test
+curl -X POST http://localhost:5000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"delhi.staff@rapidcare.com","password":"password123"}'
+```
+
+---
+
+## 🚢 Deployment (Render)
+
+1. Push changes to GitHub repository.
+2. Create a **New Web Service** on Render connected to your repository.
+3. Configure the following parameters:
+   - **Root Directory:** `backend`
+   - **Build Command:** `npm install`
+   - **Start Command:** `npm start`
+4. Set necessary Environment Variables (`MONGODB_URI`, `JWT_SECRET`, `GROQ_API_KEY`, `CORS_ORIGIN`).
+
+---
+
+## 📄 License
+
+This backend module is open-sourced software licensed under the **[MIT License](LICENSE)**.

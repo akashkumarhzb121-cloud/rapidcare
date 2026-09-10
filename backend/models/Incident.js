@@ -12,7 +12,7 @@ const incidentSchema = new mongoose.Schema({
   },
   requiredSpecialization: {
     type: String,
-    enum: ['cardiac', 'trauma', 'respiratory', 'general', 'neurology', 'pediatric'],
+    enum: ['cardiac', 'trauma', 'respiratory', 'general', 'neurology', 'pediatric', 'maternal', 'orthopedic'],
     required: true
   },
   aiReasoning: {
@@ -39,7 +39,6 @@ const incidentSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  // New: Link to Patient and Referral
   patientId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Patient',
@@ -49,6 +48,10 @@ const incidentSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Referral',
     default: null
+  },
+  bedReserved: {
+    type: Boolean,
+    default: false
   },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,

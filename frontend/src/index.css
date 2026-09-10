@@ -2,16 +2,136 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%);
+    min-height: 100vh;
+  }
+
+  html, body, #root {
+    height: 100%;
+  }
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+@layer components {
+  /* Glass card */
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-xl border border-white/60 rounded-2xl shadow-xl;
+  }
+
+  /* Gradient buttons */
+  .btn-gradient-primary {
+    @apply bg-gradient-to-r from-sky-500 to-indigo-600 text-white font-semibold rounded-xl
+           shadow-lg shadow-sky-500/30 hover:shadow-xl hover:shadow-sky-500/40
+           transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0;
+  }
+
+  .btn-gradient-danger {
+    @apply bg-gradient-to-r from-red-500 to-rose-600 text-white font-semibold rounded-xl
+           shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40
+           transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-gradient-success {
+    @apply bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold rounded-xl
+           shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40
+           transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-gradient-purple {
+    @apply bg-gradient-to-r from-violet-500 to-purple-600 text-white font-semibold rounded-xl
+           shadow-lg shadow-violet-500/30 hover:shadow-xl hover:shadow-violet-500/40
+           transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Input fields */
+  .input-modern {
+    @apply w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl
+           text-slate-900 placeholder-slate-400
+           focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500
+           focus:bg-white transition-all duration-200;
+  }
+
+  /* Stat card */
+  .stat-card {
+    @apply relative overflow-hidden rounded-2xl p-6 transition-all duration-300
+           hover:-translate-y-1 hover:shadow-2xl cursor-default;
+  }
+
+  /* Badge styles */
+  .badge-critical {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
+           bg-red-100 text-red-700 border border-red-200;
+  }
+
+  .badge-moderate {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
+           bg-amber-100 text-amber-700 border border-amber-200;
+  }
+
+  .badge-mild {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
+           bg-emerald-100 text-emerald-700 border border-emerald-200;
+  }
+}
+
+@layer utilities {
+  .text-gradient-primary {
+    @apply bg-gradient-to-r from-sky-600 to-indigo-600 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-danger {
+    @apply bg-gradient-to-r from-red-600 to-rose-600 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-success {
+    @apply bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent;
+  }
+
+  /* Mesh background */
+  .mesh-bg {
+    background-image:
+      radial-gradient(at 40% 20%, hsla(200, 100%, 74%, 0.15) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, hsla(240, 100%, 76%, 0.15) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, hsla(280, 100%, 76%, 0.15) 0px, transparent 50%),
+      radial-gradient(at 80% 50%, hsla(340, 100%, 76%, 0.1) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, hsla(160, 100%, 74%, 0.15) 0px, transparent 50%);
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #0ea5e9, #6366f1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #0284c7, #4f46e5);
 }

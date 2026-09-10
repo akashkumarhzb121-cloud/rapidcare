@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
-import { useAuth } from './AuthContext';
+import { useAuth } from './AuthContext.jsx';
 
 const SocketContext = createContext();
 
@@ -27,7 +27,8 @@ export const SocketProvider = ({ children }) => {
       return;
     }
 
-    const API_BASE_URL = process.env.VITE_API_BASE_URL || 
+    // Vite environment variable access
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
                          'https://rapidcare-5wzq.onrender.com';
     
     console.log('Connecting socket to:', API_BASE_URL);
@@ -41,8 +42,8 @@ export const SocketProvider = ({ children }) => {
       console.log('Socket connected');
       setConnected(true);
       
-      if (user.role === 'hospital_staff' && user.linkedHospitalId) {
-        newSocket.emit('joinHospitalRoom', user.linkedHospitalId);
+      if (user.role === 'hospital_staff' && (user.linkedFacilityId || user.linkedHospitalId)) {
+        newSocket.emit('joinHospitalRoom', user.linkedFacilityId || user.linkedHospitalId);
       }
     });
 

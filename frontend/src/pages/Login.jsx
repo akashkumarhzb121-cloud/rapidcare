@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Activity, Mail, Lock, ArrowRight, Shield, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
@@ -19,21 +21,12 @@ const Login = () => {
     const result = await login(email, password);
     
     if (result.success) {
-      console.log('Login successful:', result.user);
-      
       const from = location.state?.from?.pathname;
-      
-      if (from) {
-        navigate(from, { replace: true });
-      } else {
-        if (result.user.role === 'ambulance_operator') {
-          navigate('/operator', { replace: true });
-        } else if (result.user.role === 'hospital_staff') {
-          navigate('/hospital', { replace: true });
-        } else {
-          navigate('/', { replace: true });
-        }
-      }
+      if (from) navigate(from, { replace: true });
+      else if (result.user.role === 'ambulance_operator') navigate('/operator', { replace: true });
+      else if (result.user.role === 'hospital_staff') navigate('/hospital', { replace: true });
+      else if (result.user.role === 'community_health_worker') navigate('/chw', { replace: true });
+      else navigate('/', { replace: true });
     } else {
       setError(result.error);
     }
@@ -41,95 +34,186 @@ const Login = () => {
     setLoading(false);
   };
 
+  const quickLogin = (role) => {
+    const creds = {
+      operator: { email: 'delhi.operator@rapidcare.com', password: 'password123' },
+      staff: { email: 'delhi.staff@rapidcare.com', password: 'password123' },
+      chw: { email: 'delhi.chw@rapidcare.com', password: 'password123' }
+    };
+    setEmail(creds[role].email);
+    setPassword(creds[role].password);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <div className="flex justify-center">
-            <div className="bg-blue-600 text-white p-3 rounded-xl">
-              <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-          </div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            RapidCare
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Sign in to your dashboard
-          </p>
-        </div>
-        
-        <form className="mt-8 space-y-6 bg-white p-8 rounded-xl shadow-lg" onSubmit={handleSubmit}>
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-              {error}
-            </div>
-          )}
+    <div className="min-h-screen mesh-bg flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Animated background blobs */}
+      <motion.div
+        animate={{ scale: [1, 1.2, 1], rotate: [0, 90, 0] }}
+        transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+        className="absolute top-0 -left-40 w-96 h-96 bg-gradient-to-r from-sky-400/30 to-indigo-400/30 rounded-full blur-3xl"
+      />
+      <motion.div
+        animate={{ scale: [1.2, 1, 1.2], rotate: [0, -90, 0] }}
+        transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
+        className="absolute bottom-0 -right-40 w-96 h-96 bg-gradient-to-r from-violet-400/30 to-pink-400/30 rounded-full blur-3xl"
+      />
+
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="w-full max-w-md relative z-10"
+      >
+        {/* Logo & Title */}
+        <div className="text-center mb-8">
+          <motion.div
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
+            className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-sky-500 to-indigo-600 rounded-3xl shadow-2xl shadow-sky-500/40 mb-4"
+          >
+            <Activity className="w-10 h-10 text-white" strokeWidth={2.5} />
+          </motion.div>
           
-          <div className="space-y-4">
+          <motion.h1
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="text-4xl font-bold text-gradient-primary mb-2"
+          >
+            RapidCare
+          </motion.h1>
+          
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="text-slate-600 text-sm"
+          >
+            AI-Powered Care Continuity & Emergency Response
+          </motion.p>
+        </div>
+
+        {/* Login Card */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+          className="glass-card p-8 relative"
+        >
+          {/* Decorative shine */}
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-400 to-transparent" />
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm flex items-center"
+              >
+                <Shield className="w-4 h-4 mr-2 flex-shrink-0" />
+                {error}
+              </motion.div>
+            )}
+
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
+                Email Address
               </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="you@example.com"
-              />
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="you@rapidcare.com"
+                  className="input-modern pl-12"
+                />
+              </div>
             </div>
+
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Password
               </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="••••••••"
-              />
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="••••••••"
+                  className="input-modern pl-12"
+                />
+              </div>
+            </div>
+
+            <motion.button
+              type="submit"
+              disabled={loading}
+              whileHover={{ scale: loading ? 1 : 1.02 }}
+              whileTap={{ scale: loading ? 1 : 0.98 }}
+              className="btn-gradient-primary w-full py-3.5 flex items-center justify-center space-x-2"
+            >
+              {loading ? (
+                <>
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                    className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
+                  />
+                  <span>Signing in...</span>
+                </>
+              ) : (
+                <>
+                  <span>Sign In</span>
+                  <ArrowRight className="w-5 h-5" />
+                </>
+              )}
+            </motion.button>
+          </form>
+
+          {/* Quick Login */}
+          <div className="mt-6 pt-6 border-t border-slate-200">
+            <div className="flex items-center justify-center mb-3">
+              <Sparkles className="w-4 h-4 text-sky-500 mr-2" />
+              <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                Quick Demo Login
+              </p>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { label: 'Operator', role: 'operator', color: 'from-sky-500 to-blue-600' },
+                { label: 'Staff', role: 'staff', color: 'from-violet-500 to-purple-600' },
+                { label: 'CHW', role: 'chw', color: 'from-emerald-500 to-teal-600' },
+              ].map((btn) => (
+                <motion.button
+                  key={btn.role}
+                  type="button"
+                  onClick={() => quickLogin(btn.role)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`py-2 px-3 rounded-xl text-white text-xs font-semibold
+                             bg-gradient-to-r ${btn.color} shadow-md hover:shadow-lg transition-all`}
+                >
+                  {btn.label}
+                </motion.button>
+              ))}
             </div>
           </div>
 
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          <div className="mt-6 text-center">
+            <Link 
+              to="/register" 
+              className="text-sm text-sky-600 hover:text-sky-700 font-medium transition-colors"
             >
-              {loading ? 'Signing in...' : 'Sign in'}
-            </button>
-          </div>
-          
-          <div className="text-sm text-center space-y-2">
-            <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500 block">
-              Don't have an account? Register here
+              Don't have an account? <span className="font-bold">Register</span>
             </Link>
-            
-            <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">
-              <p className="font-semibold mb-1">Demo Credentials:</p>
-              <p className="mb-1">👨‍✈️ Operator: operator@rapidcare.com / password123</p>
-              <p>🏥 Staff: staff@rapidcare.com / password123</p>
-            </div>
-            
-            <div className="text-xs text-blue-600 bg-blue-50 p-3 rounded-lg mt-2">
-              <p className="font-semibold mb-1">💡 Tip: Test both dashboards</p>
-              <p>Use Chrome for Operator and Chrome Incognito (Ctrl+Shift+N) for Hospital Staff</p>
-            </div>
           </div>
-        </form>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 };

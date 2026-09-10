@@ -1,9 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { authMiddleware, roleMiddleware } = require('../middleware/authMiddleware');
+const { authMiddleware } = require('../middleware/authMiddleware');
 const followUpService = require('../services/followUpService');
 
-// All routes require authentication
 router.use(authMiddleware);
 
 // Get due follow-ups
@@ -13,6 +12,17 @@ router.get('/due', async (req, res) => {
     res.json({ followUps });
   } catch (error) {
     console.error('Get due follow-ups error:', error);
+    res.status(500).json({ error: 'Failed to get follow-ups' });
+  }
+});
+
+// Get ALL follow-ups (including future)
+router.get('/all', async (req, res) => {
+  try {
+    const followUps = await followUpService.getAllFollowUps(req.userId);
+    res.json({ followUps });
+  } catch (error) {
+    console.error('Get all follow-ups error:', error);
     res.status(500).json({ error: 'Failed to get follow-ups' });
   }
 });

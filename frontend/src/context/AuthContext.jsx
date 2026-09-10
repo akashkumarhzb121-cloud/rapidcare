@@ -16,14 +16,12 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Use sessionStorage instead of localStorage for per-tab sessions
     const storedUser = sessionStorage.getItem('user');
     const storedToken = sessionStorage.getItem('token');
     
     if (storedUser && storedToken) {
       try {
         const parsedUser = JSON.parse(storedUser);
-        console.log('Session restored:', parsedUser);
         setUser(parsedUser);
       } catch (error) {
         console.error('Failed to restore session:', error);
@@ -37,13 +35,9 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      console.log('Login attempt for:', email);
       const response = await api.post('/api/auth/login', { email, password });
       const { token, user } = response.data;
       
-      console.log('Login successful:', user);
-      
-      // Store in sessionStorage (per-tab)
       sessionStorage.setItem('token', token);
       sessionStorage.setItem('user', JSON.stringify(user));
       setUser(user);
@@ -78,7 +72,6 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    console.log('Logging out user:', user?.name);
     sessionStorage.removeItem('token');
     sessionStorage.removeItem('user');
     setUser(null);
@@ -93,6 +86,7 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated: !!user,
     isOperator: user?.role === 'ambulance_operator',
     isHospitalStaff: user?.role === 'hospital_staff',
+    isCHW: user?.role === 'community_health_worker',
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

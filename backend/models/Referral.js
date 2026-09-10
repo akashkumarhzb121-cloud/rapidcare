@@ -44,9 +44,21 @@ const referralSchema = new mongoose.Schema({
     enum: ['initiated', 'in-transit', 'received', 'completed', 'cancelled'],
     default: 'initiated'
   },
+  isEmergencyFlagged: {
+    type: Boolean,
+    default: false
+  },
   linkedIncident: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Incident',
+    default: null
+  },
+  acceptedAt: {
+    type: Date,
+    default: null
+  },
+  completedAt: {
+    type: Date,
     default: null
   },
   timeline: [{

@@ -1,6 +1,5 @@
 const FollowUpSchedule = require('../models/FollowUpSchedule');
 
-// Create follow-up
 async function createFollowUp(data, userId) {
   const followUp = new FollowUpSchedule({
     ...data,
@@ -12,17 +11,15 @@ async function createFollowUp(data, userId) {
   return followUp;
 }
 
-// Get due follow-ups
 async function getDueFollowUps(userId = null, role = null) {
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  today.setHours(23, 59, 59, 999);
   
   const query = {
     dueDate: { $lte: today },
     status: 'scheduled'
   };
   
-  // CHW sees only their assigned follow-ups
   if (role === 'community_health_worker' && userId) {
     query.assignedTo = userId;
   }
@@ -30,10 +27,18 @@ async function getDueFollowUps(userId = null, role = null) {
   return await FollowUpSchedule.find(query)
     .populate('patientId', 'name age village phone')
     .populate('assignedTo', 'name email')
+    .populate('referralId', 'reason severity status')
     .sort('dueDate');
 }
 
-// Complete follow-up
+// Get ALL follow-ups for a CHW (including future ones)
+async function getAllFollowUps(userId) {
+  return await FollowUpSchedule.find({ assignedTo: userId })
+    .populate('patientId', 'name age village phone')
+    .populate('referralId', 'reason severity status referralType')
+    .sort('-createdAt');
+}
+
 async function completeFollowUp(followUpId, userId, notes = '') {
   const followUp = await FollowUpSchedule.findById(followUpId);
   if (!followUp) {
@@ -49,7 +54,6 @@ async function completeFollowUp(followUpId, userId, notes = '') {
   return followUp;
 }
 
-// Schedule post-referral follow-up
 async function schedulePostReferralFollowUp(patientId, referralId, condition, dueDate, assignedTo) {
   return await createFollowUp({
     patientId,
@@ -62,4 +66,10 @@ async function schedulePostReferralFollowUp(patientId, referralId, condition, du
   }, assignedTo);
 }
 
-module.exports = { createFollowUp, getDueFollowUps, completeFollowUp, schedulePostReferralFollowUp };
+module.exports = { 
+  createFollowUp, 
+  getDueFollowUps, 
+  getAllFollowUps,
+  completeFollowUp, 
+  schedulePostReferralFollowUp 
+};
