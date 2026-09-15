@@ -22,7 +22,7 @@ const Login = () => {
     setLoading(true);
 
     const result = await login(email, password);
-    
+
     if (result.success) {
       const from = location.state?.from?.pathname;
       if (from) navigate(from, { replace: true });
@@ -30,11 +30,12 @@ const Login = () => {
       else if (result.user.role === 'hospital_staff') navigate('/hospital', { replace: true });
       else if (result.user.role === 'community_health_worker') navigate('/chw', { replace: true });
       else if (result.user.role === 'specialist') navigate('/specialist', { replace: true });
+      else if (result.user.role === 'district_admin') navigate('/admin', { replace: true });
       else navigate('/', { replace: true });
     } else {
       setError(result.error);
     }
-    
+
     setLoading(false);
   };
 
@@ -43,7 +44,8 @@ const Login = () => {
       operator: { email: 'pune.operator@rapidcare.com', password: 'password123' },
       staff: { email: 'pune.staff@rapidcare.com', password: 'password123' },
       chw: { email: 'pune.chw@rapidcare.com', password: 'password123' },
-      specialist: { email: 'cardio.specialist@rapidcare.com', password: 'password123' }
+      specialist: { email: 'cardio.specialist@rapidcare.com', password: 'password123' },
+      admin: { email: 'admin@rapidcare.com', password: 'password123' },
     };
     setEmail(creds[role].email);
     setPassword(creds[role].password);
@@ -82,7 +84,7 @@ const Login = () => {
           >
             <Activity className="w-10 h-10 text-white" strokeWidth={2.5} />
           </motion.div>
-          
+
           <motion.h1
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -91,7 +93,7 @@ const Login = () => {
           >
             {t('common.appName')}
           </motion.h1>
-          
+
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -194,15 +196,16 @@ const Login = () => {
                 { label: t('roles.staff'), role: 'staff', color: 'from-violet-500 to-purple-600' },
                 { label: t('roles.chw'), role: 'chw', color: 'from-emerald-500 to-teal-600' },
                 { label: t('roles.specialist', 'Specialist'), role: 'specialist', color: 'from-teal-500 to-cyan-600' },
+                { label: t('roles.admin', 'Admin'), role: 'admin', color: 'from-amber-500 to-rose-600', colSpan: 'col-span-2' },
               ].map((btn) => (
                 <motion.button
                   key={btn.role}
                   type="button"
                   onClick={() => quickLogin(btn.role)}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   className={`py-2 px-2 rounded-xl text-white text-xs font-semibold
-                             bg-gradient-to-r ${btn.color} shadow-md hover:shadow-lg transition-all`}
+                             bg-gradient-to-r ${btn.color} shadow-md hover:shadow-lg transition-all ${btn.colSpan || ''}`}
                 >
                   {btn.label}
                 </motion.button>
@@ -211,11 +214,12 @@ const Login = () => {
           </div>
 
           <div className="mt-6 text-center">
-            <Link 
-              to="/register" 
+            <Link
+              to="/register"
               className="text-sm text-sky-600 hover:text-sky-700 font-medium transition-colors"
             >
-              {t('auth.dontHaveAccount')} <span className="font-bold">{t('auth.registerHere')}</span>
+              {t('auth.dontHaveAccount')}{' '}
+              <span className="font-bold">{t('auth.registerHere')}</span>
             </Link>
           </div>
         </motion.div>

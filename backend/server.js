@@ -21,10 +21,9 @@ const io = socketIO(server, {
 });
 
 app.use(cors({ origin: allowedOrigins, credentials: true }));
-app.use(express.json());
+app.use(express.json({ limit: '5mb' }));
 app.set('io', io);
 
-// Routes
 const authRoutes = require('./routes/authRoutes');
 const incidentRoutes = require('./routes/incidentRoutes');
 const hospitalRoutes = require('./routes/hospitalRoutes');
@@ -35,19 +34,16 @@ const followUpRoutes = require('./routes/followUpRoutes');
 const teleconsultRoutes = require('./routes/teleconsultRoutes');
 const queueRoutes = require('./routes/queueRoutes');
 const appointmentRoutes = require('./routes/appointmentRoutes');
+const diagnosticRoutes = require('./routes/diagnosticRoutes');
+const analyticsRoutes = require('./routes/analyticsRoutes');
 
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
-
-  socket.on('joinHospitalRoom', (id) => {
-    socket.join(`hospital_${id}`);
-    socket.join(`facility_${id}`);
-  });
+  socket.on('joinHospitalRoom', (id) => { socket.join(`hospital_${id}`); socket.join(`facility_${id}`); });
   socket.on('joinFacilityRoom', (id) => socket.join(`facility_${id}`));
   socket.on('joinOperatorRoom', (id) => socket.join(`operator_${id}`));
   socket.on('joinIncidentRoom', (id) => socket.join(`incident_${id}`));
   socket.on('joinUserRoom', (id) => socket.join(`user_${id}`));
-
   socket.on('disconnect', () => console.log('Client disconnected:', socket.id));
 });
 
@@ -61,13 +57,15 @@ app.use('/api/followups', followUpRoutes);
 app.use('/api/teleconsults', teleconsultRoutes);
 app.use('/api/queue', queueRoutes);
 app.use('/api/appointments', appointmentRoutes);
+app.use('/api/diagnostics', diagnosticRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date(), uptime: process.uptime() }));
 
 app.get('/', (req, res) => res.json({
   message: 'RapidCare API Server',
-  version: '2.1.0',
-  features: ['patients', 'referrals', 'incidents', 'facilities', 'followups', 'teleconsults', 'queue', 'appointments']
+  version: '2.3.0',
+  features: ['patients','referrals','incidents','facilities','followups','teleconsults','queue','appointments','diagnostics','analytics']
 }));
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/rapidcare';
@@ -76,6 +74,4 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true 
   .catch(err => console.error('MongoDB connection error:', err));
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT}`);
-});
+server.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
