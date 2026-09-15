@@ -86,7 +86,8 @@ const getIncident = async (req, res) => {
   try {
     const incident = await Incident.findById(req.params.id)
       .populate('assignedHospitalId', 'name address contactNumber location')
-      .populate('createdBy', 'name email');
+      .populate('createdBy', 'name email')
+      .populate('acknowledgedBy', 'name email');
     
     if (!incident) return res.status(404).json({ error: 'Incident not found' });
     res.json({ incident });
@@ -106,10 +107,11 @@ const getFacilityIncidents = async (req, res) => {
     
     const incidents = await Incident.find({
       assignedHospitalId: facilityId,
-      status: { $in: ['dispatched', 'completed'] }
+      status: { $in: ['dispatched', 'acknowledged', 'completed'] }
     })
     .populate('createdBy', 'name email')
     .populate('patientId', 'name age village')
+    .populate('acknowledgedBy', 'name email')
     .sort('-createdAt');
     
     res.json({ incidents });
@@ -118,14 +120,12 @@ const getFacilityIncidents = async (req, res) => {
   }
 };
 
-// UPDATED: Bed count now decrements on DISPATCH
+// UPDATED: Dispatch — bed reserved, incident status = 'dispatched' (awaiting staff ACK)
 const dispatchIncident = async (req, res) => {
   try {
     const { hospitalId } = req.body;
     
-    if (!hospitalId) {
-      return res.status(400).json({ error: 'Hospital ID is required' });
-    }
+    if (!hospitalId) return res.status(400).json({ error: 'Hospital ID is required' });
     
     const incident = await Incident.findById(req.params.id);
     if (!incident) return res.status(404).json({ error: 'Incident not found' });
@@ -141,23 +141,29 @@ const dispatchIncident = async (req, res) => {
       return res.status(400).json({ error: 'Hospital has no available beds' });
     }
     
-    // *** DECREMENT BED COUNT ON DISPATCH ***
+    // Reserve bed
     hospital.availableBeds -= 1;
     await hospital.save();
-    console.log(`✓ Bed reserved at ${hospital.name}: ${hospital.availableBeds}/${hospital.totalBeds} remaining`);
     
     incident.assignedHospitalId = hospitalId;
     incident.status = 'dispatched';
+    incident.dispatchedAt = new Date();
     incident.bedReserved = true;
     await incident.save();
     
     const io = req.app.get('io');
     
-    // Broadcast to hospital
-    io.to(`hospital_${hospitalId}`).emit('newIncidentAssigned', { incident });
-    io.to(`facility_${hospitalId}`).emit('newIncidentAssigned', { incident });
+    // Notify the hospital — they must ACKNOWLEDGE
+    io.to(`hospital_${hospitalId}`).emit('newIncidentAssigned', { 
+      incident, 
+      requiresAcknowledgment: true 
+    });
+    io.to(`facility_${hospitalId}`).emit('newIncidentAssigned', { 
+      incident, 
+      requiresAcknowledgment: true 
+    });
     
-    // *** BROADCAST BED UPDATE TO ALL OPERATORS ***
+    // Broadcast bed update
     io.emit('hospitalAvailabilityUpdated', {
       hospitalId: hospital._id,
       facilityId: hospital._id,
@@ -168,19 +174,19 @@ const dispatchIncident = async (req, res) => {
     io.emit('facilityAvailabilityUpdated', {
       facilityId: hospital._id,
       availableBeds: hospital.availableBeds,
-      totalBeds: hospital.totalBeds,
-      reason: 'incident_dispatched'
+      totalBeds: hospital.totalBeds
     });
     
     io.to(`incident_${incident._id}`).emit('incidentStatusChanged', { 
       incidentId: incident._id, 
       status: 'dispatched',
       hospitalId,
-      bedsRemaining: hospital.availableBeds
+      bedsRemaining: hospital.availableBeds,
+      requiresAcknowledgment: true
     });
     
     res.json({
-      message: 'Incident dispatched successfully. Bed reserved.',
+      message: 'Ambulance dispatched. Awaiting hospital acknowledgment.',
       incident,
       hospital: {
         id: hospital._id,
@@ -195,6 +201,115 @@ const dispatchIncident = async (req, res) => {
   }
 };
 
+// NEW: Acknowledge — staff confirms they're ready to receive the patient
+const acknowledgeIncident = async (req, res) => {
+  try {
+    const { notes } = req.body;
+    const incident = await Incident.findById(req.params.id);
+    if (!incident) return res.status(404).json({ error: 'Incident not found' });
+    
+    const userFacility = req.user.linkedFacilityId || req.user.linkedHospitalId;
+    
+    if (req.userRole !== 'hospital_staff') {
+      return res.status(403).json({ error: 'Only hospital staff can acknowledge incidents' });
+    }
+    
+    if (!userFacility || userFacility.toString() !== incident.assignedHospitalId?.toString()) {
+      return res.status(403).json({ error: 'This incident is assigned to a different hospital' });
+    }
+    
+    if (incident.status !== 'dispatched') {
+      return res.status(400).json({ error: 'Only dispatched incidents can be acknowledged' });
+    }
+    
+    incident.status = 'acknowledged';
+    incident.acknowledgedAt = new Date();
+    incident.acknowledgedBy = req.userId;
+    incident.verificationNotes = notes || 'Patient accepted by hospital staff';
+    await incident.save();
+    
+    const io = req.app.get('io');
+    
+    // Notify the operator + incident room
+    io.to(`incident_${incident._id}`).emit('incidentStatusChanged', {
+      incidentId: incident._id,
+      status: 'acknowledged',
+      acknowledgedBy: req.user.name,
+      acknowledgedAt: incident.acknowledgedAt
+    });
+    
+    // Broadcast to hospital
+    io.to(`hospital_${incident.assignedHospitalId}`).emit('incidentAcknowledged', { incident });
+    
+    res.json({
+      message: '✅ Incident acknowledged. Patient is expected.',
+      incident
+    });
+  } catch (error) {
+    console.error('Acknowledge incident error:', error);
+    res.status(500).json({ error: 'Failed to acknowledge incident' });
+  }
+};
+
+// NEW: Reject — staff can reject if bed unavailable/incorrect dispatch
+const rejectIncident = async (req, res) => {
+  try {
+    const { reason } = req.body;
+    const incident = await Incident.findById(req.params.id);
+    if (!incident) return res.status(404).json({ error: 'Incident not found' });
+    
+    const userFacility = req.user.linkedFacilityId || req.user.linkedHospitalId;
+    
+    if (req.userRole !== 'hospital_staff') {
+      return res.status(403).json({ error: 'Only hospital staff can reject incidents' });
+    }
+    
+    if (!userFacility || userFacility.toString() !== incident.assignedHospitalId?.toString()) {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+    
+    if (incident.status !== 'dispatched') {
+      return res.status(400).json({ error: 'Only dispatched incidents can be rejected' });
+    }
+    
+    // Release the bed
+    const hospital = await Facility.findById(incident.assignedHospitalId);
+    if (hospital) {
+      hospital.availableBeds += 1;
+      await hospital.save();
+      
+      const io = req.app.get('io');
+      io.emit('hospitalAvailabilityUpdated', {
+        hospitalId: hospital._id,
+        facilityId: hospital._id,
+        availableBeds: hospital.availableBeds,
+        totalBeds: hospital.totalBeds,
+        reason: 'incident_rejected'
+      });
+    }
+    
+    incident.status = 'cancelled';
+    incident.rejectedReason = reason || 'Rejected by hospital staff';
+    await incident.save();
+    
+    const io = req.app.get('io');
+    io.to(`incident_${incident._id}`).emit('incidentStatusChanged', {
+      incidentId: incident._id,
+      status: 'cancelled',
+      reason: incident.rejectedReason
+    });
+    
+    res.json({
+      message: '❌ Incident rejected. Bed released.',
+      incident
+    });
+  } catch (error) {
+    console.error('Reject incident error:', error);
+    res.status(500).json({ error: 'Failed to reject incident' });
+  }
+};
+
+// Complete — only after acknowledgment
 const completeIncident = async (req, res) => {
   try {
     const incident = await Incident.findById(req.params.id);
@@ -210,12 +325,12 @@ const completeIncident = async (req, res) => {
       return res.status(403).json({ error: 'This incident is assigned to a different hospital' });
     }
     
-    if (incident.status !== 'dispatched') {
-      return res.status(400).json({ error: 'Incident must be dispatched before completion' });
+    if (incident.status !== 'acknowledged') {
+      return res.status(400).json({ error: 'Incident must be acknowledged before completion' });
     }
     
-    // Mark complete - bed already decremented on dispatch
     incident.status = 'completed';
+    incident.completedAt = new Date();
     await incident.save();
     
     const io = req.app.get('io');
@@ -225,7 +340,7 @@ const completeIncident = async (req, res) => {
     });
     
     res.json({
-      message: 'Incident completed successfully',
+      message: '✅ Incident completed successfully',
       incident
     });
   } catch (error) {
@@ -248,5 +363,7 @@ module.exports = {
   getIncident, 
   getFacilityIncidents,
   dispatchIncident, 
+  acknowledgeIncident,
+  rejectIncident,
   completeIncident 
 };

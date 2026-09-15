@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { Activity, Mail, Lock, ArrowRight, Shield, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const Login = () => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -26,6 +29,7 @@ const Login = () => {
       else if (result.user.role === 'ambulance_operator') navigate('/operator', { replace: true });
       else if (result.user.role === 'hospital_staff') navigate('/hospital', { replace: true });
       else if (result.user.role === 'community_health_worker') navigate('/chw', { replace: true });
+      else if (result.user.role === 'specialist') navigate('/specialist', { replace: true });
       else navigate('/', { replace: true });
     } else {
       setError(result.error);
@@ -36,9 +40,10 @@ const Login = () => {
 
   const quickLogin = (role) => {
     const creds = {
-      operator: { email: 'delhi.operator@rapidcare.com', password: 'password123' },
-      staff: { email: 'delhi.staff@rapidcare.com', password: 'password123' },
-      chw: { email: 'delhi.chw@rapidcare.com', password: 'password123' }
+      operator: { email: 'pune.operator@rapidcare.com', password: 'password123' },
+      staff: { email: 'pune.staff@rapidcare.com', password: 'password123' },
+      chw: { email: 'pune.chw@rapidcare.com', password: 'password123' },
+      specialist: { email: 'cardio.specialist@rapidcare.com', password: 'password123' }
     };
     setEmail(creds[role].email);
     setPassword(creds[role].password);
@@ -46,7 +51,6 @@ const Login = () => {
 
   return (
     <div className="min-h-screen mesh-bg flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Animated background blobs */}
       <motion.div
         animate={{ scale: [1, 1.2, 1], rotate: [0, 90, 0] }}
         transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
@@ -58,13 +62,17 @@ const Login = () => {
         className="absolute bottom-0 -right-40 w-96 h-96 bg-gradient-to-r from-violet-400/30 to-pink-400/30 rounded-full blur-3xl"
       />
 
+      {/* Language Switcher - Top Right */}
+      <div className="absolute top-6 right-6 z-20">
+        <LanguageSwitcher variant="dropdown" />
+      </div>
+
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
         className="w-full max-w-md relative z-10"
       >
-        {/* Logo & Title */}
         <div className="text-center mb-8">
           <motion.div
             initial={{ scale: 0, rotate: -180 }}
@@ -81,7 +89,7 @@ const Login = () => {
             transition={{ delay: 0.3 }}
             className="text-4xl font-bold text-gradient-primary mb-2"
           >
-            RapidCare
+            {t('common.appName')}
           </motion.h1>
           
           <motion.p
@@ -90,18 +98,16 @@ const Login = () => {
             transition={{ delay: 0.4 }}
             className="text-slate-600 text-sm"
           >
-            AI-Powered Care Continuity & Emergency Response
+            {t('common.tagline')}
           </motion.p>
         </div>
 
-        {/* Login Card */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.3, duration: 0.5 }}
           className="glass-card p-8 relative"
         >
-          {/* Decorative shine */}
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-400 to-transparent" />
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -118,7 +124,7 @@ const Login = () => {
 
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Email Address
+                {t('auth.email')}
               </label>
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
@@ -135,7 +141,7 @@ const Login = () => {
 
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Password
+                {t('auth.password')}
               </label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
@@ -164,30 +170,30 @@ const Login = () => {
                     transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                     className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
                   />
-                  <span>Signing in...</span>
+                  <span>{t('auth.signingIn')}</span>
                 </>
               ) : (
                 <>
-                  <span>Sign In</span>
+                  <span>{t('auth.signIn')}</span>
                   <ArrowRight className="w-5 h-5" />
                 </>
               )}
             </motion.button>
           </form>
 
-          {/* Quick Login */}
           <div className="mt-6 pt-6 border-t border-slate-200">
             <div className="flex items-center justify-center mb-3">
               <Sparkles className="w-4 h-4 text-sky-500 mr-2" />
               <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                Quick Demo Login
+                {t('auth.quickDemoLogin')}
               </p>
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {[
-                { label: 'Operator', role: 'operator', color: 'from-sky-500 to-blue-600' },
-                { label: 'Staff', role: 'staff', color: 'from-violet-500 to-purple-600' },
-                { label: 'CHW', role: 'chw', color: 'from-emerald-500 to-teal-600' },
+                { label: t('roles.operator'), role: 'operator', color: 'from-sky-500 to-blue-600' },
+                { label: t('roles.staff'), role: 'staff', color: 'from-violet-500 to-purple-600' },
+                { label: t('roles.chw'), role: 'chw', color: 'from-emerald-500 to-teal-600' },
+                { label: t('roles.specialist', 'Specialist'), role: 'specialist', color: 'from-teal-500 to-cyan-600' },
               ].map((btn) => (
                 <motion.button
                   key={btn.role}
@@ -195,7 +201,7 @@ const Login = () => {
                   onClick={() => quickLogin(btn.role)}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className={`py-2 px-3 rounded-xl text-white text-xs font-semibold
+                  className={`py-2 px-2 rounded-xl text-white text-xs font-semibold
                              bg-gradient-to-r ${btn.color} shadow-md hover:shadow-lg transition-all`}
                 >
                   {btn.label}
@@ -209,7 +215,7 @@ const Login = () => {
               to="/register" 
               className="text-sm text-sky-600 hover:text-sky-700 font-medium transition-colors"
             >
-              Don't have an account? <span className="font-bold">Register</span>
+              {t('auth.dontHaveAccount')} <span className="font-bold">{t('auth.registerHere')}</span>
             </Link>
           </div>
         </motion.div>

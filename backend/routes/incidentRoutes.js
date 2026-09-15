@@ -3,24 +3,27 @@ const router = express.Router();
 const { 
   createIncident, 
   getIncident, 
+  getFacilityIncidents,
   dispatchIncident, 
+  acknowledgeIncident,
+  rejectIncident,
   completeIncident 
 } = require('../controllers/incidentController');
 const { authMiddleware, roleMiddleware } = require('../middleware/authMiddleware');
 
-// All incident routes require authentication
 router.use(authMiddleware);
 
-// Create incident (operators only)
+// Operator only
 router.post('/', roleMiddleware(['ambulance_operator']), createIncident);
-
-// Get incident details (any authenticated user)
-router.get('/:id', getIncident);
-
-// Dispatch incident (operators only)
 router.patch('/:id/dispatch', roleMiddleware(['ambulance_operator']), dispatchIncident);
 
-// Complete incident (hospital staff only)
+// Staff only — verification workflow
+router.patch('/:id/acknowledge', roleMiddleware(['hospital_staff']), acknowledgeIncident);
+router.patch('/:id/reject', roleMiddleware(['hospital_staff']), rejectIncident);
 router.patch('/:id/complete', roleMiddleware(['hospital_staff']), completeIncident);
+
+// Read — any authenticated user
+router.get('/facility/:facilityId', getFacilityIncidents);
+router.get('/:id', getIncident);
 
 module.exports = router;

@@ -34,8 +34,8 @@ const patientSchema = new mongoose.Schema({
   },
   languagePreference: {
     type: String,
-    enum: ['english', 'hindi', 'marathi'],
-    default: 'hindi'
+    enum: ['en', 'hi', 'mr', 'english', 'hindi', 'marathi'],
+    default: 'mr'
   },
   chronicConditions: [{
     type: String,
@@ -66,7 +66,6 @@ const patientSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Index for quick search
 patientSchema.index({ name: 'text', village: 'text', abhaId: 'text' });
 
 module.exports = mongoose.model('Patient', patientSchema);

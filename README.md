@@ -1,312 +1,241 @@
 # RapidCare — AI-Powered Care Continuity & Emergency Response Platform
 
-> A full-stack MERN platform that uses AI-driven triage to route rural patients to the correct level of care — from village sub-centres to district hospitals — tracking them across their journey, with emergency ambulance dispatch as the escalation path for critical cases.
-
-**Problem Statement:** SIH 26133 — *Accessibility and quality of public healthcare services, particularly in rural and underserved areas*  
-**Category:** Software | **Theme:** MedTech / BioTech / HealthTech
+> For SIH 26133 — *Accessibility and quality of public healthcare services, particularly in rural and underserved areas*
+> **Organization:** Government of Maharashtra · **Theme:** MedTech / BioTech / HealthTech
 
 ---
 
 ## 🏗️ Architecture
+┌───────────────────────────────────────────────┐
+│ Frontend (React + Vite + Tailwind + i18n) │
+│ Operator · Hospital Staff · CHW │
+│ Languages: English · हिंदी · मराठी │
+│ Offline-capable with IndexedDB │
+└───────────────────────────────────────────────┘
+│ REST + WebSocket
+▼
+┌───────────────────────────────────────────────┐
+│ Backend (Node + Express + Socket.IO) │
+│ JWT auth · 3 roles · RBAC │
+│ Groq AI Triage · Geocoding · Distance │
+└───────────────────────────────────────────────┘
+│
+▼
+┌───────────────────────────────────────────────┐
+│ MongoDB (Mongoose) │
+│ Users · Patients · Facilities · Referrals │
+│ Incidents · FollowUpSchedules │
+└───────────────────────────────────────────────┘
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                 Frontend (React + Vite)                     │
-│        Operator  ·  Staff  ·  Community Health Worker       │
-└─────────────────────────────────────────────────────────────┘
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────┐
-│                 Backend (Express + Node)                    │
-│    Auth  ·  Patients  ·  Referrals  ·  Facilities  ·  Incidents│
-│                  Groq AI Triage Engine                      │
-│                  Socket.IO Real-Time                        │
-└─────────────────────────────────────────────────────────────┘
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────┐
-│                   MongoDB (Mongoose ODM)                    │
-│      Users  ·  Patients  ·  Facilities  ·  Referrals        │
-│                Incidents  ·  FollowUps                      │
-└─────────────────────────────────────────────────────────────┘
-```
+text
 
 ---
 
 ## ✨ Features
 
-### 🩺 Community Health Worker (CHW)
-- **Patient Registration:** Register patients with comprehensive longitudinal digital health records.
-- **AI Triage:** AI-powered symptom triage using Groq API for rapid level-of-care assessment.
-- **Critical Care Override:** 🚨 **Force Emergency** toggle to immediately escalate critical cases.
-- **Referral Tracking:** Track outgoing referrals sent to higher-tier hospitals in real time.
-- **Follow-up Worklist:** Dedicated queue to manage follow-up care for maternal, child, and chronic health patients.
+### 🌐 Multilingual (English · हिंदी · मराठी)
+- Complete UI translations
+- Per-user language preference persisted
+- Voice input & text-to-speech ready
+
+### 📴 Offline-First (IndexedDB)
+- Patient registration queued offline
+- Symptom triage queued offline
+- Auto-sync on reconnect with retry logic
+- Pending count badge in header
+
+### 👩‍⚕️ Community Health Worker
+- Register patients with longitudinal records
+- AI-powered symptom triage
+- 🚨 Force Emergency toggle
+- Referral tracking · Follow-up worklist
+- **Voice input** for symptoms in Hindi/Marathi
 
 ### 🚑 Emergency Operator
-- **AI Severity Assessment:** Real-time AI triage and severity assessment via Groq.
-- **Intelligent Hospital Matching:** Distance and travel-time ranked hospital recommendations.
-- **One-Click Dispatch:** Instant ambulance dispatch system with automatic bed count decrement.
-- **Live Bed Tracking:** Real-time visibility into available hospital beds across districts.
+- AI severity assessment (Groq)
+- Distance + travel-time ranked hospital matching
+- One-click dispatch with **bed reservation**
+- **Awaiting hospital acknowledgment** state
 
 ### 🏥 Hospital Staff
-- **Isolated Dashboards:** Multi-city isolated regional dashboards (Delhi / Mumbai / Jaipur).
-- **Incoming Alerts:** Real-time notification stream for incoming referrals and emergency alerts.
-- **Automated Workflow:** Accept or complete referrals with automatic CHW follow-up creation.
-- **Resource Management:** Live bed availability and medicine stock inventory management.
-- **Key Performance Counters:** Real-time counters tracking active emergencies and today's completed cases.
+- **Verification workflow:**
+  - Receive dispatch → **Confirm & Accept** or **Reject**
+  - Only after confirmation can patient be completed
+- Real-time updates per facility
+- Bed + medicine management
+- Live counters (Active Emergencies, Completed Today)
 
-### 🌐 Platform Features
-- **Role-Based Access Control (RBAC):** 3-role granular RBAC (CHW, Operator, Staff) secured with JWT.
-- **Real-Time Engine:** Websocket integration via Socket.IO for instant system-wide updates.
-- **Offline Capabilities:** Local queued sync capability for low-connectivity rural environments.
-- **Localization:** Dual English and Hindi interface support.
-- **Responsive Design:** Mobile-first, fully responsive UI designed for handheld field devices.
-
----
-
-## 📁 Project Structure
-
-```text
-rapidcare/
-├── backend/                  # Express API Backend
-│   ├── controllers/          # Request handlers and route logic
-│   ├── middleware/           # Authentication, authorization, RBAC
-│   ├── models/               # Mongoose schemas (User, Patient, Facility, etc.)
-│   ├── routes/               # API route definitions
-│   ├── services/             # Business logic (AI engine, referrals, follow-ups)
-│   └── server.js             # Entry point
-├── frontend/                 # React + Vite Web Client
-│   ├── src/
-│   │   ├── components/       # Reusable UI components
-│   │   ├── context/          # React context (Auth, Socket)
-│   │   ├── pages/            # View components & dashboards
-│   │   └── services/         # API integration layer
-│   └── index.html
-└── README.md
-```
+### 🗺️ Multi-Facility Isolation
+- Maharashtra districts: Mumbai, Pune, Nagpur, Nashik, Thane, Chh. Sambhajinagar, Kolhapur, Solapur, Amravati, Jalgaon
+- Each staff sees only their facility's data
+- Cross-facility referral routing
 
 ---
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- **Node.js** v18+
-- **MongoDB** (Local instance or MongoDB Atlas)
-- **Groq API Key** ([Get free key](https://console.groq.com/keys))
+- Node.js v18+
+- MongoDB (local or Atlas)
+- Groq API key — free at https://console.groq.com/keys
 
-### 1. Clone & Install Dependencies
+### Setup
 
 ```bash
-# Clone repository
-git clone https://github.com/akashkumarhzb121-cloud/rapidcare.git
-cd rapidcare
-
-# Install Backend Dependencies
+# Backend
 cd backend
 npm install
 cp .env.example .env
+# Edit .env
+node seedData.js      # Seed Maharashtra hospitals
+npm run dev
 
-# Install Frontend Dependencies
-cd ../frontend
+# Frontend (new terminal)
+cd frontend
 npm install
 cp .env.example .env.local
-```
+npm run dev
+Open http://localhost:3000
 
-### 2. Seed Database
+🔑 Demo Credentials
+Password for all accounts: password123
 
-```bash
-cd backend
-node seedData.js
-```
+DistrictOperatorStaffCHW
+Punepune.operator@rapidcare.compune.staff@rapidcare.compune.chw@rapidcare.com
+Mumbaimumbai.operator@rapidcare.commumbai.staff@rapidcare.commumbai.chw@rapidcare.com
+Nagpurnagpur.operator@rapidcare.comnagpur.staff@rapidcare.comnagpur.chw@rapidcare.com
+Nashiknashik.operator@rapidcare.comnashik.staff@rapidcare.comnashik.chw@rapidcare.com
+Thanethane.operator@rapidcare.comthane.staff@rapidcare.comthane.chw@rapidcare.com
+Legacy: operator@rapidcare.com · staff@rapidcare.com · chw@rapidcare.com
 
-### 3. Run Development Servers
-
-```bash
-# Terminal 1 — Backend
-cd backend && npm run dev
-
-# Terminal 2 — Frontend
-cd frontend && npm run dev
-```
-
-Open your browser at **`http://localhost:3000`**
-
----
-
-## 🔑 Demo Credentials
-
-> **Default Password for all accounts:** `password123`
-
-| City | Operator | Hospital Staff | CHW |
-| :--- | :--- | :--- | :--- |
-| **Delhi** | `delhi.operator@rapidcare.com` | `delhi.staff@rapidcare.com` *(AIIMS)* | `delhi.chw@rapidcare.com` |
-| **Mumbai** | `mumbai.operator@rapidcare.com` | `mumbai.staff@rapidcare.com` *(KEM)* | `mumbai.chw@rapidcare.com` |
-| **Jaipur** | `jaipur.operator@rapidcare.com` | `jaipur.staff@rapidcare.com` *(SMS)* | `jaipur.chw@rapidcare.com` |
-| **Legacy** | `operator@rapidcare.com` | `staff@rapidcare.com` | `chw@rapidcare.com` |
-
----
-
-## 🔧 Environment Variables
-
-### Backend (`backend/.env`)
-```env
+🔧 Environment Variables
+backend/.env
+env
 PORT=5000
 MONGODB_URI=mongodb://localhost:27017/rapidcare
 JWT_SECRET=your_jwt_secret_here
 GROQ_API_KEY=your_groq_api_key_here
 CORS_ORIGIN=http://localhost:3000
-```
-
-### Frontend (`frontend/.env.local`)
-```env
+frontend/.env.local
+env
 VITE_API_BASE_URL=http://localhost:5000
-```
+📚 API Reference
+Authentication
+MethodEndpointAccess
+POST/api/auth/registerPublic
+POST/api/auth/loginPublic
+PATCH/api/auth/languageAuthenticated
+Patients
+MethodEndpointAccess
+POST/api/patientsCHW, Operator
+GET/api/patients/search?q=Authenticated
+GET/api/patients/:id/historyAuthenticated
+Referrals
+MethodEndpointAccess
+POST/api/referralsCHW, Operator
+PATCH/api/referrals/:id/statusAuthenticated
+GET/api/referrals/facility/:idAuthenticated
+GET/api/referrals/facility/:id/statsAuthenticated
+Incidents (Emergency)
+MethodEndpointAccess
+POST/api/incidentsOperator
+GET/api/incidents/:idAuthenticated
+GET/api/incidents/facility/:idAuthenticated
+PATCH/api/incidents/:id/dispatchOperator
+PATCH/api/incidents/:id/acknowledgeStaff ⭐
+PATCH/api/incidents/:id/rejectStaff ⭐
+PATCH/api/incidents/:id/completeStaff
+Facilities & Follow-ups
+MethodEndpointAccess
+GET/api/facilitiesPublic
+GET/api/facilities/:id/dashboardAuthenticated
+PATCH/api/facilities/:id/availabilityStaff
+GET/api/followups/dueAuthenticated
+GET/api/followups/allAuthenticated
+PATCH/api/followups/:id/completeAuthenticated
+🔄 Incident Verification Workflow
+text
+Operator creates incident
+        ↓
+Operator dispatches to hospital → Bed reserved
+        ↓
+Incident status: 'dispatched' (awaiting staff)
+        ↓
+Staff dashboard shows: ⚠️ Awaiting Your Confirmation
+        ↓
+   ┌────┴────┐
+   ↓         ↓
+Confirm    Reject
+   ↓         ↓
+'acknowledged'  'cancelled'
+   ↓             ↓
+Staff marks       Bed released
+complete          Operator notified
+   ↓
+'completed'
+📡 Socket.IO Events
+EventDirectionPayload
+hospitalAvailabilityUpdatedServer → All{ facilityId, availableBeds }
+newIncidentAssignedServer → Facility{ incident, requiresAcknowledgment: true }
+incidentAcknowledgedServer → Facility{ incident }
+incidentStatusChangedServer → Incident room{ incidentId, status }
+newReferralReceivedServer → Facility{ referral }
+referralStatusChangedServer → Both facilities{ referral }
+followUpCreatedServer → CHW{ referralId }
+🏥 Real Maharashtra Hospital Data
+Sourced from:
 
----
+ABDM Health Facility Registry — https://nhpr.abdm.gov.in
 
-## 📚 API Reference
+National Health Portal — https://www.nhp.gov.in
 
-### Authentication
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `POST` | `/api/auth/register` | Register new user (3 roles available) |
-| `POST` | `/api/auth/login` | User login & JWT generation |
+PM-JAY Empanelled Hospitals — https://hospitals.pmjay.gov.in
 
-### Patients
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `POST` | `/api/patients` | Register patient (CHW / Operator) |
-| `GET` | `/api/patients/search?q=` | Search patient by name, village, or ABHA ID |
-| `GET` | `/api/patients/:id/history` | Retrieve complete patient history |
+data.gov.in
 
-### Referrals
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `POST` | `/api/referrals` | Create referral with AI triage |
-| `PATCH` | `/api/referrals/:id/status` | Update referral status (triggers auto follow-up) |
-| `GET` | `/api/referrals/facility/:id` | List facility referrals |
-| `GET` | `/api/referrals/facility/:id/stats` | Dashboard analytical counters |
+25 real facilities across 10 Maharashtra districts:
 
-### Incidents (Emergency)
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `POST` | `/api/incidents` | Report emergency incident |
-| `GET` | `/api/incidents/:id` | Get incident details |
-| `GET` | `/api/incidents/facility/:id` | List facility emergency incidents |
-| `PATCH` | `/api/incidents/:id/dispatch` | Dispatch emergency response (auto-decrements beds) |
-| `PATCH` | `/api/incidents/:id/complete` | Mark emergency incident complete |
+Mumbai City (KEM, JJ, GT)
 
-### Facilities
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/facilities` | List all healthcare facilities |
-| `GET` | `/api/facilities/:id/dashboard` | Beds, medicine, and diagnostic metrics |
-| `PATCH` | `/api/facilities/:id/availability` | Update facility resource availability |
+Mumbai Suburban (Sion, Nair, Rajawadi)
 
-### Follow-ups
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/followups/due` | List due follow-up tasks |
-| `GET` | `/api/followups/all` | List all assigned follow-ups |
-| `PATCH` | `/api/followups/:id/complete` | Mark follow-up as complete |
+Pune (Sassoon, Aundh)
 
----
+Nagpur (GMC, Mayo)
 
-## 📡 Real-Time Events (Socket.IO)
+Nashik, Thane, Chh. Sambhajinagar, Kolhapur, Solapur, Amravati, Jalgaon
 
-| Event Name | Direction | Trigger |
-| :--- | :--- | :--- |
-| `hospitalAvailabilityUpdated` | Server → All | Bed count or resource changes |
-| `newIncidentAssigned` | Server → Facility | New emergency dispatch to hospital |
-| `newReferralReceived` | Server → Facility | New referral routed to facility |
-| `referralStatusChanged` | Server → Both Facilities | Referral status change |
-| `followUpCreated` | Server → CHW | Referral accepted, generating CHW task |
-| `facilityStatsUpdated` | Server → Facility | Real-time counter updates |
+🚢 Deployment
+Backend → Render
+Root: backend
 
----
+Build: npm install
 
-## 🏥 Real Hospital Data
+Start: npm start
 
-Hospital data configured in `seedData.js` is curated from authoritative Indian government sources:
+Env: MONGODB_URI, JWT_SECRET, GROQ_API_KEY, CORS_ORIGIN
 
-- **National Health Portal:** [nhp.gov.in](https://www.nhp.gov.in/hospital-directory)
-- **ABDM Health Facility Registry:** [facility.abdm.gov.in](https://facility.abdm.gov.in)
-- **PM-JAY Empanelled Hospitals:** [pmjay.gov.in](https://pmjay.gov.in)
-- **Open Data Portal:** [data.gov.in](https://data.gov.in)
+Frontend → Vercel
+Root: frontend
 
-**Curated Hospitals:**
-- **Delhi:** AIIMS, Safdarjung Hospital, RML Hospital, Lok Nayak Hospital, GTB Hospital
-- **Mumbai:** KEM Hospital, Sion Hospital, Nair Hospital, JJ Hospital
-- **Jaipur:** SMS Hospital (and multi-tier sub-centres)
+Framework: Vite
 
-*Note: All facility geographical coordinates are verified against Google Maps / OpenStreetMap.*
+Build: npm run build · Output: dist
 
----
+Env: VITE_API_BASE_URL
 
-## 🚢 Deployment
+vercel.json includes SPA rewrites for client-side routing.
 
-### Backend (Render)
-1. Push code to GitHub repository.
-2. Go to **Render** → Create **New Web Service** → Connect repository.
-3. Configuration:
-   - **Root Directory:** `backend`
-   - **Build Command:** `npm install`
-   - **Start Command:** `npm start`
-4. Set Environment Variables (`MONGODB_URI`, `JWT_SECRET`, `GROQ_API_KEY`, `CORS_ORIGIN`).
+🔒 Security
+JWT (7-day expiry) · bcrypt (10 rounds)
 
-### Frontend (Vercel)
-1. Go to **Vercel** → Import Project → Select repository.
-2. Configuration:
-   - **Root Directory:** `frontend`
-   - **Framework Preset:** `Vite`
-3. Set Environment Variable (`VITE_API_BASE_URL`).
+3-role RBAC
 
----
+Per-facility data isolation
 
-## 🔒 Security
+CORS whitelist
 
-- **JSON Web Tokens (JWT):** Secure session handling with 7-day token expiry.
-- **Role-Based Access Control:** Strict authorization boundaries across roles.
-- **Password Hashing:** Bcrypt encryption with 10 salt rounds.
-- **CORS Protection:** Whitelisted origin filtering.
-- **Environment Isolation:** Sensitive credential encapsulation.
-- **Data Isolation:** Regional and per-facility data partitioning.
+📝 License
+MIT
 
----
-
-## 🗺️ Roadmap
-
-- [ ] ABDM ABHA ID integration for patient identity.
-- [ ] Offline-first IndexedDB queue for CHW field data entry.
-- [ ] Expanded regional language support (Marathi, Tamil, Bengali).
-- [ ] Real-time GPS tracking for dispatched ambulances.
-- [ ] Automated WhatsApp / SMS patient notification workflows.
-- [ ] Integration with government health data APIs (data.gov.in).
-
----
-
-## 🤝 Contributing
-
-1. Fork the project repository.
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`).
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`).
-4. Push to the Branch (`git push origin feature/AmazingFeature`).
-5. Open a Pull Request.
-
----
-
-## 📄 License
-
-Distributed under the **MIT License**. See `LICENSE` for details.
-
----
-
-## 🙏 Acknowledgments
-
-- **SIH 26133** — Maharashtra State Innovation Society
-- **Groq** — Fast AI inference platform
-- **ABDM / NHA** — Health Facility Registry
-- **National Health Portal** — Public health directory data
-
----
-*Built with ❤️ for rural India's healthcare accessibility.*
+Built with ❤️ for rural Maharashtra healthcare

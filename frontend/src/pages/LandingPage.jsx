@@ -45,7 +45,7 @@ const LandingPage = () => {
           <p className="text-lg text-gray-600">AI-Powered Care Continuity & Emergency Response Platform</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-6xl mx-auto">
           {/* Operator Card */}
           <div
             onClick={() => handleNavigation('/operator', 'ambulance_operator')}
@@ -90,11 +90,26 @@ const LandingPage = () => {
               )}
             </div>
           </div>
+
+          {/* Specialist Card */}
+          <div
+            onClick={() => handleNavigation('/specialist', 'specialist')}
+            className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-all cursor-pointer border-2 border-transparent hover:border-teal-500"
+          >
+            <div className="text-center">
+              <div className="text-4xl mb-4">🩺</div>
+              <h3 className="text-lg font-bold mb-2">Specialist Doctor</h3>
+              <p className="text-sm text-gray-600">Review consults, join video calls, and prescribe treatment</p>
+              {user?.role === 'specialist' && (
+                <span className="inline-block mt-3 text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full">✓ Access</span>
+              )}
+            </div>
+          </div>
         </div>
 
         <div className="text-center mt-8 text-sm text-gray-500">
           <p>Demo Credentials:</p>
-          <p>Operator: operator@rapidcare.com | Staff: staff@rapidcare.com | CHW: chw@rapidcare.com</p>
+          <p>Operator: mumbai.operator@rapidcare.com | Staff: mumbai.staff@rapidcare.com | CHW: mumbai.chw@rapidcare.com</p>
           <p className="mt-1">All passwords: password123</p>
         </div>
       </main>
