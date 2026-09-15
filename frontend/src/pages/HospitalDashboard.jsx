@@ -2,13 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import {
-  Building2, BedDouble, CheckCircle2, Clock, AlertTriangle,
+  Building2, BedDouble, CheckCircle2, Clock, AlertTriangle, Activity,
   MapPin, XCircle, ShieldCheck, FlaskConical, Upload, FileText
+  , Ticket, CalendarClock, Bell, LogOut
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import api from '../services/api';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import DashboardSidebar from '../components/DashboardSidebar';
 
 const HospitalDashboard = () => {
   const { t } = useTranslation();
@@ -284,37 +286,52 @@ const HospitalDashboard = () => {
     cancelled: 'bg-slate-100 text-slate-600 border-slate-300'
   };
 
+  const hospitalTabs = [
+    { id: 'overview', label: 'Overview', icon: Activity },
+    { id: 'queue', label: `Queue (${queueData.entries?.length || 0})`, icon: Ticket },
+    { id: 'appointments', label: `Appointments (${appointments.length})`, icon: CalendarClock },
+    { id: 'diagnostics', label: `Diagnostics (${diagnosticOrders.length})`, icon: FlaskConical },
+  ];
+
   return (
     <div className="min-h-screen mesh-bg relative overflow-hidden">
       <div className="absolute top-0 -left-40 w-[400px] h-[400px] bg-violet-400/20 rounded-full blur-3xl" />
       <div className="absolute bottom-0 -right-40 w-[400px] h-[400px] bg-purple-400/20 rounded-full blur-3xl" />
 
-      <header className="relative z-10 bg-white/70 backdrop-blur-xl border-b border-white/60 shadow-sm sticky top-0">
-        <div className="max-w-7xl mx-auto py-4 px-4 flex justify-between items-center">
-          <div className="flex items-center space-x-3">
+      <header className="sticky top-0 z-30 border-b border-white/70 bg-white/80 shadow-sm backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-y-3 px-4 py-3 sm:flex-nowrap sm:justify-between sm:px-6">
+          <div className="flex min-w-0 flex-1 items-center space-x-3">
             <div className="bg-gradient-to-br from-violet-500 to-purple-600 p-2.5 rounded-2xl shadow-lg shadow-violet-500/30">
               <Building2 className="w-6 h-6 text-white" strokeWidth={2.5} />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gradient-primary">{facility?.name || 'Hospital'}</h1>
-              <p className="text-xs text-slate-500">
+              <h1 className="truncate text-lg font-bold text-gradient-primary sm:text-xl">{facility?.name || 'Hospital'}</h1>
+              <p className="hidden truncate text-xs text-slate-500 sm:block">
                 {facility?.taluka && `${facility.taluka}, `}{facility?.district}, {facility?.state} • {user?.name}
               </p>
             </div>
           </div>
-          <div className="flex items-center space-x-3">
+          <div className="flex w-full shrink-0 items-center justify-end gap-1.5 sm:w-auto sm:gap-3">
             <LanguageSwitcher variant="dropdown" />
             <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold ${
               connected ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
               <span className={`w-2 h-2 rounded-full mr-2 ${connected ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
               {connected ? t('common.live') : t('common.offline')}
             </span>
-            <button onClick={logout} className="text-sm text-red-600 hover:text-red-800 font-medium">{t('common.logout')}</button>
+            <button aria-label="Notifications" title="Notifications" className="btn-ghost h-10 w-10 p-0">
+              <Bell className="h-5 w-5" />
+            </button>
+            <span className="hidden text-sm font-medium text-slate-700 lg:block">{user?.name}</span>
+            <button onClick={logout} aria-label={t('common.logout')} title={t('common.logout')} className="btn-ghost h-10 w-10 p-0 text-red-600 hover:bg-red-50 hover:text-red-700 sm:h-auto sm:w-auto sm:px-3">
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('common.logout')}</span>
+            </button>
           </div>
         </div>
       </header>
 
-      <main className="relative z-10 max-w-7xl mx-auto py-6 px-4">
+      <main className="relative z-10 mx-auto max-w-7xl px-4 py-6 lg:ml-64">
+        <DashboardSidebar tabs={hospitalTabs} activeTab={activeSection} onTabChange={setActiveSection} accent="violet" />
         <AnimatePresence>
           {error && (
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
@@ -330,20 +347,16 @@ const HospitalDashboard = () => {
           )}
         </AnimatePresence>
 
-        <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
-          {[
-            { id: 'overview', label: '📊 Overview' },
-            { id: 'queue', label: `🎫 Queue (${queueData.entries?.length || 0})` },
-            { id: 'appointments', label: `📅 Appointments (${appointments.length})` },
-            { id: 'diagnostics', label: `🔬 Diagnostics (${diagnosticOrders.length})` },
-          ].map(tab => (
+        <div className="mb-6 flex gap-2 overflow-x-auto pb-1 lg:hidden">
+          {hospitalTabs.map(tab => (
             <button key={tab.id} onClick={() => setActiveSection(tab.id)}
-              className={`px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all ${
+            className={`flex min-h-11 items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold whitespace-nowrap transition-all ${
                 activeSection === tab.id
                   ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-500/30'
                   : 'bg-white/70 text-slate-700 hover:bg-white'}`}>
-              {tab.label}
-            </button>
+            <tab.icon className="h-4 w-4" />
+            <span>{tab.label}</span>
+          </button>
           ))}
         </div>
 

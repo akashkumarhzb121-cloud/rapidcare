@@ -3,12 +3,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Activity, MapPin, Search, Ambulance, Building2, 
   Clock, BedDouble, Phone, AlertTriangle, CheckCircle2,
-  Loader2, Brain, TrendingUp
+  Loader2, Brain, TrendingUp, Bell, LogOut
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import api from '../services/api';
 import VoiceInput from '../components/VoiceInput';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const OperatorDashboard = () => {
   const { user, logout } = useAuth();
@@ -99,18 +100,18 @@ const OperatorDashboard = () => {
       <div className="absolute bottom-0 -right-40 w-[400px] h-[400px] bg-indigo-400/20 rounded-full blur-3xl" />
 
       {/* Header */}
-      <header className="relative z-10 bg-white/70 backdrop-blur-xl border-b border-white/60 shadow-sm">
-        <div className="max-w-7xl mx-auto py-4 px-4 flex justify-between items-center">
-          <div className="flex items-center space-x-3">
+      <header className="sticky top-0 z-30 border-b border-white/70 bg-white/80 shadow-sm backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-y-3 px-4 py-3 sm:flex-nowrap sm:justify-between sm:px-6">
+          <div className="flex min-w-0 flex-1 items-center space-x-3">
             <div className="bg-gradient-to-br from-sky-500 to-indigo-600 p-2.5 rounded-2xl shadow-lg shadow-sky-500/30">
               <Ambulance className="w-6 h-6 text-white" strokeWidth={2.5} />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gradient-primary">RapidCare</h1>
-              <p className="text-xs text-slate-500">Emergency Operator</p>
+              <h1 className="text-lg font-bold text-gradient-primary sm:text-xl">RapidCare</h1>
+              <p className="truncate text-xs text-slate-500">Emergency Operator · Dispatch</p>
             </div>
           </div>
-          <div className="flex items-center space-x-3">
+          <div className="flex w-full shrink-0 items-center justify-end gap-1.5 sm:w-auto sm:gap-3">
             <motion.span
               animate={{ opacity: [0.5, 1, 0.5] }}
               transition={{ duration: 2, repeat: Infinity }}
@@ -121,10 +122,17 @@ const OperatorDashboard = () => {
               <span className={`w-2 h-2 rounded-full mr-2 ${connected ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
               {connected ? 'LIVE' : 'OFFLINE'}
             </motion.span>
-            <div className="text-right hidden sm:block">
+            <LanguageSwitcher variant="dropdown" />
+            <button aria-label="Notifications" title="Notifications" className="btn-ghost h-10 w-10 p-0">
+              <Bell className="h-5 w-5" />
+            </button>
+            <div className="hidden text-right sm:block">
               <p className="text-sm font-semibold text-slate-700">{user?.name}</p>
             </div>
-            <button onClick={logout} className="text-sm text-red-600 hover:text-red-800 font-medium">Logout</button>
+            <button onClick={logout} aria-label="Logout" title="Logout" className="btn-ghost h-10 w-10 p-0 text-red-600 hover:bg-red-50 hover:text-red-700 sm:h-auto sm:w-auto sm:px-3">
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">Logout</span>
+            </button>
           </div>
         </div>
       </header>

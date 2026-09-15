@@ -65,7 +65,7 @@ const Login = () => {
       />
 
       {/* Language Switcher - Top Right */}
-      <div className="absolute top-6 right-6 z-20">
+      <div className="absolute right-4 top-4 z-20 sm:right-6 sm:top-6">
         <LanguageSwitcher variant="dropdown" />
       </div>
 
@@ -108,7 +108,7 @@ const Login = () => {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.3, duration: 0.5 }}
-          className="glass-card p-8 relative"
+          className="glass-card relative p-5 sm:p-8"
         >
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-400 to-transparent" />
 
@@ -204,7 +204,7 @@ const Login = () => {
                   onClick={() => quickLogin(btn.role)}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className={`py-2 px-2 rounded-xl text-white text-xs font-semibold
+                  className={`min-h-11 rounded-2xl px-2 py-2 text-xs font-semibold text-white
                              bg-gradient-to-r ${btn.color} shadow-md hover:shadow-lg transition-all ${btn.colSpan || ''}`}
                 >
                   {btn.label}

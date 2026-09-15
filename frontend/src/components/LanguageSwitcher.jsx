@@ -52,18 +52,18 @@ const LanguageSwitcher = ({ variant = 'dropdown' }) => {
       animate={{ opacity: 1, y: 0 }}
       className="relative group"
     >
-      <button className="flex items-center gap-2 px-3 py-2 bg-white/80 backdrop-blur-sm rounded-xl border border-slate-200 hover:border-sky-400 transition-all">
+      <button aria-label="Change language" title="Change language" className="flex min-h-11 items-center gap-2 rounded-2xl border border-slate-200 bg-white/80 px-3 py-2 backdrop-blur-sm hover:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2">
         <Globe className="w-4 h-4 text-sky-600" />
         <span className="text-sm font-medium text-slate-700">
           {LANGUAGES.find((l) => l.code === i18n.language)?.nativeLabel || 'English'}
         </span>
       </button>
-      <div className="absolute right-0 mt-2 w-40 bg-white rounded-xl shadow-xl border border-slate-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+      <div className="invisible absolute right-0 z-50 mt-2 w-40 rounded-2xl border border-slate-200 bg-white p-1 opacity-0 shadow-xl transition-all group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
         {LANGUAGES.map((lang) => (
           <button
             key={lang.code}
             onClick={() => handleLanguageChange(lang.code)}
-            className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+            className={`min-h-11 w-full rounded-xl px-4 py-2.5 text-left text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-inset ${
               i18n.language === lang.code
                 ? 'bg-sky-50 text-sky-700 font-semibold'
                 : 'text-slate-700 hover:bg-slate-50'

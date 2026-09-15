@@ -101,9 +101,11 @@ const VoiceInput = ({ onTranscript, currentValue = '', placeholder = '' }) => {
       <motion.button
         type="button"
         onClick={toggleListening}
+        aria-label={isListening ? t('common.stopListening', 'Stop listening') : t('common.voiceInput')}
+        title={isListening ? t('common.stopListening', 'Stop listening') : t('common.voiceInput')}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        className={`relative inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm transition-all ${
+        className={`relative inline-flex min-h-11 items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 ${
           isListening
             ? 'bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/40'
             : 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-500/30'

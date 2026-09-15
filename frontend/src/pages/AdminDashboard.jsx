@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import {
   BarChart3, TrendingUp, AlertTriangle, Users, Building2, Activity,
   Heart, Pill, Trophy, MapPin, Shield, Clock, CheckCircle2
+  , Bell, LogOut
 } from 'lucide-react';
 import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
@@ -12,6 +13,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import FacilityMap from '../components/FacilityMap';
+import DashboardSidebar from '../components/DashboardSidebar';
 
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
@@ -71,12 +73,12 @@ const AdminDashboard = () => {
   }
 
   const TABS = [
-    { id: 'overview', label: '📊 Overview' },
-    { id: 'map', label: '🗺️ Facility Map' },
-    { id: 'referrals', label: '📈 Referral Analytics' },
-    { id: 'emergencies', label: '🚨 Emergency Insights' },
-    { id: 'ranking', label: '🏆 Facility Ranking' },
-    { id: 'shortages', label: `💊 Medicine Alerts${shortages.length ? ` (${shortages.length})` : ''}` },
+    { id: 'overview', label: 'Overview', icon: BarChart3 },
+    { id: 'map', label: 'Facility Map', icon: MapPin },
+    { id: 'referrals', label: 'Referral Analytics', icon: TrendingUp },
+    { id: 'emergencies', label: 'Emergency Insights', icon: AlertTriangle },
+    { id: 'ranking', label: 'Facility Ranking', icon: Trophy },
+    { id: 'shortages', label: `Medicine Alerts${shortages.length ? ` (${shortages.length})` : ''}`, icon: Pill },
   ];
 
   return (
@@ -85,18 +87,18 @@ const AdminDashboard = () => {
       <div className="absolute bottom-0 -right-40 w-[400px] h-[400px] bg-purple-400/20 rounded-full blur-3xl" />
 
       {/* Header */}
-      <header className="relative z-10 bg-white/70 backdrop-blur-xl border-b border-white/60 shadow-sm sticky top-0">
-        <div className="max-w-7xl mx-auto py-4 px-4 flex justify-between items-center">
-          <div className="flex items-center space-x-3">
+      <header className="sticky top-0 z-30 border-b border-white/70 bg-white/80 shadow-sm backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-y-3 px-4 py-3 sm:flex-nowrap sm:justify-between sm:px-6">
+          <div className="flex min-w-0 flex-1 items-center space-x-3">
             <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-2.5 rounded-2xl shadow-lg shadow-indigo-500/30">
               <BarChart3 className="w-6 h-6 text-white" strokeWidth={2.5} />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gradient-primary">District Health Dashboard</h1>
-              <p className="text-xs text-slate-500">Maharashtra Public Health — Real-time analytics</p>
+              <h1 className="truncate text-lg font-bold text-gradient-primary sm:text-xl">District Health Dashboard</h1>
+              <p className="hidden text-xs text-slate-500 sm:block">Maharashtra Public Health — Real-time analytics</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex w-full shrink-0 items-center justify-end gap-1.5 sm:w-auto sm:gap-3">
             {/* District filter */}
             {districts.length > 0 && (
               <select
@@ -111,19 +113,26 @@ const AdminDashboard = () => {
               </select>
             )}
             <LanguageSwitcher variant="dropdown" />
-            <span className="text-sm text-slate-600 hidden sm:block">{user?.name}</span>
-            <button onClick={logout} className="text-sm text-red-600 hover:text-red-800 font-medium">Logout</button>
+            <button aria-label="Notifications" title="Notifications" className="btn-ghost h-10 w-10 p-0">
+              <Bell className="h-5 w-5" />
+            </button>
+            <span className="hidden text-sm font-medium text-slate-700 lg:block">{user?.name}</span>
+            <button onClick={logout} aria-label="Logout" title="Logout" className="btn-ghost h-10 w-10 p-0 text-red-600 hover:bg-red-50 hover:text-red-700 sm:h-auto sm:w-auto sm:px-3">
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">Logout</span>
+            </button>
           </div>
         </div>
       </header>
 
       {/* Tabs */}
-      <div className="relative z-10 bg-white/60 backdrop-blur-sm border-b border-white/60">
-        <div className="max-w-7xl mx-auto flex space-x-1 overflow-x-auto px-4">
+      <div className="relative z-10 bg-white/60 backdrop-blur-sm border-b border-white/60 lg:hidden">
+        <div className="mx-auto flex space-x-1 overflow-x-auto px-4">
           {TABS.map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-all relative ${
+              className={`flex min-h-11 items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap transition-all relative ${
                 activeTab === tab.id ? 'text-indigo-700' : 'text-slate-500 hover:text-slate-700'}`}>
+              <tab.icon className="h-4 w-4" />
               {tab.label}
               {activeTab === tab.id && (
                 <motion.div layoutId="admin-tab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full" />
@@ -133,7 +142,8 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      <main className="relative z-10 max-w-7xl mx-auto py-6 px-4">
+      <main className="relative z-10 mx-auto max-w-7xl px-4 py-6 lg:ml-64">
+        <DashboardSidebar tabs={TABS} activeTab={activeTab} onTabChange={setActiveTab} accent="indigo" />
 
         {/* OVERVIEW TAB */}
         {activeTab === 'overview' && (

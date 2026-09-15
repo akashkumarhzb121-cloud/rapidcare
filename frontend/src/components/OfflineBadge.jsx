@@ -15,14 +15,14 @@ const OfflineBadge = ({ variant = 'pill' }) => {
   if (variant === 'compact') {
     return (
       <div className="flex items-center gap-2">
-        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
+        <span title={online ? 'Connected to the network' : 'Working offline'} className={`inline-flex min-h-9 items-center rounded-full px-2.5 py-1 text-xs font-semibold ${
           online ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
         }`}>
           {online ? <Wifi className="w-3 h-3 mr-1.5" /> : <WifiOff className="w-3 h-3 mr-1.5" />}
           {online ? 'Online' : 'Offline'}
         </span>
         {pendingCount > 0 && (
-          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
+          <span title={`${pendingCount} pending offline changes`} className="inline-flex min-h-9 items-center rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-700">
             <CloudOff className="w-3 h-3 mr-1.5" />
             {pendingCount}
           </span>
@@ -40,7 +40,7 @@ const OfflineBadge = ({ variant = 'pill' }) => {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
-          className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold ${
+          className={`inline-flex min-h-9 items-center rounded-full px-3 py-1.5 text-xs font-semibold ${
             online
               ? 'bg-emerald-100 text-emerald-700'
               : 'bg-amber-100 text-amber-800 border border-amber-300'
@@ -73,7 +73,8 @@ const OfflineBadge = ({ variant = 'pill' }) => {
             whileTap={{ scale: 0.95 }}
             onClick={handleSync}
             disabled={!online || syncing}
-            className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+            aria-label={syncing ? 'Syncing offline changes' : 'Sync offline changes'}
+            className={`inline-flex min-h-9 items-center rounded-full px-3 py-1.5 text-xs font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 ${
               syncing
                 ? 'bg-blue-100 text-blue-700'
                 : online

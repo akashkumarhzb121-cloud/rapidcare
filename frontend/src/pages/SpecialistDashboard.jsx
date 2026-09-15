@@ -4,13 +4,14 @@ import { useTranslation } from 'react-i18next';
 import {
   Stethoscope, Video, Clock, CheckCircle2, XCircle,
   AlertTriangle, FileText, Calendar, Phone, MapPin, User,
-  Pill
+  Pill, Bell, LogOut
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import api from '../services/api';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import TeleconsultRoom from '../components/TeleconsultRoom';
+import DashboardSidebar from '../components/DashboardSidebar';
 
 const SpecialistDashboard = () => {
   const { t } = useTranslation();
@@ -180,6 +181,12 @@ const SpecialistDashboard = () => {
   const activeConsults = myConsults.filter(c => ['accepted', 'active'].includes(c.status));
   const completedConsults = myConsults.filter(c => c.status === 'completed');
 
+  const specialistTabs = [
+    { id: 'pending', label: `Pending Requests (${pending.length})`, icon: Clock },
+    { id: 'active', label: `Active (${activeConsults.length})`, icon: Video },
+    { id: 'completed', label: `Completed (${completedConsults.length})`, icon: CheckCircle2 }
+  ];
+
   const specIcons = {
     cardiac: '❤️', trauma: '🩹', respiratory: '🫁', general: '🩺',
     neurology: '🧠', pediatric: '👶', maternal: '🤰', orthopedic: '🦴',
@@ -198,20 +205,20 @@ const SpecialistDashboard = () => {
       <div className="absolute top-0 -left-40 w-[400px] h-[400px] bg-teal-400/20 rounded-full blur-3xl" />
       <div className="absolute bottom-0 -right-40 w-[400px] h-[400px] bg-cyan-400/20 rounded-full blur-3xl" />
 
-      <header className="relative z-10 bg-white/70 backdrop-blur-xl border-b border-white/60 shadow-sm sticky top-0">
-        <div className="max-w-7xl mx-auto py-4 px-4 flex justify-between items-center">
-          <div className="flex items-center space-x-3">
+      <header className="sticky top-0 z-30 border-b border-white/70 bg-white/80 shadow-sm backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-y-3 px-4 py-3 sm:flex-nowrap sm:justify-between sm:px-6">
+          <div className="flex min-w-0 flex-1 items-center space-x-3">
             <div className="bg-gradient-to-br from-teal-500 to-cyan-600 p-2.5 rounded-2xl shadow-lg shadow-teal-500/30">
               <Stethoscope className="w-6 h-6 text-white" strokeWidth={2.5} />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gradient-primary">{t('roles.specialist')}</h1>
-              <p className="text-xs text-slate-500">
+              <h1 className="text-lg font-bold text-gradient-primary sm:text-xl">{t('roles.specialist')}</h1>
+              <p className="hidden truncate text-xs text-slate-500 sm:block">
                 {user?.name} · {specIcons[user?.specialization]} <span className="uppercase">{user?.specialization}</span> Specialist
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex w-full shrink-0 items-center justify-end gap-1.5 sm:w-auto sm:gap-3">
             <LanguageSwitcher variant="dropdown" />
             <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold ${
               connected ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
@@ -219,27 +226,29 @@ const SpecialistDashboard = () => {
               <span className={`w-2 h-2 rounded-full mr-2 ${connected ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
               {connected ? t('common.live') : t('common.offline')}
             </span>
-            <button onClick={logout} className="text-sm text-red-600 hover:text-red-800 font-medium">
-              {t('common.logout')}
+            <button aria-label="Notifications" title="Notifications" className="btn-ghost h-10 w-10 p-0">
+              <Bell className="h-5 w-5" />
+            </button>
+            <span className="hidden text-sm font-medium text-slate-700 lg:block">{user?.name}</span>
+            <button onClick={logout} aria-label={t('common.logout')} title={t('common.logout')} className="btn-ghost h-10 w-10 p-0 text-red-600 hover:bg-red-50 hover:text-red-700 sm:h-auto sm:w-auto sm:px-3">
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('common.logout')}</span>
             </button>
           </div>
         </div>
       </header>
 
-      <div className="relative z-10 bg-white/60 backdrop-blur-sm border-b border-white/60">
+      <div className="relative z-10 bg-white/60 backdrop-blur-sm border-b border-white/60 lg:hidden">
         <div className="max-w-7xl mx-auto flex space-x-1 px-4">
-          {[
-            { id: 'pending', label: `⏳ Pending Requests (${pending.length})` },
-            { id: 'active', label: `🎥 Active (${activeConsults.length})` },
-            { id: 'completed', label: `✅ Completed (${completedConsults.length})` }
-          ].map(tab => (
+          {specialistTabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-all relative ${
+              className={`flex min-h-11 items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap transition-all relative ${
                 activeTab === tab.id ? 'text-teal-700' : 'text-slate-500 hover:text-slate-700'
               }`}
             >
+              <tab.icon className="h-4 w-4" />
               {tab.label}
               {activeTab === tab.id && (
                 <motion.div
@@ -252,7 +261,8 @@ const SpecialistDashboard = () => {
         </div>
       </div>
 
-      <main className="relative z-10 max-w-7xl mx-auto py-6 px-4">
+      <main className="relative z-10 mx-auto max-w-7xl px-4 py-6 lg:ml-64">
+        <DashboardSidebar tabs={specialistTabs} activeTab={activeTab} onTabChange={setActiveTab} accent="teal" />
         <AnimatePresence>
           {error && (
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}

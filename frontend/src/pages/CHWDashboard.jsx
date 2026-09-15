@@ -5,7 +5,7 @@ import {
   UserPlus, Stethoscope, ClipboardList, CalendarClock,
   CheckCircle2, AlertTriangle, Search,
   Users, Clock, WifiOff, Video, Plus, FlaskConical,
-  FileText
+  FileText, Bell, LogOut
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
@@ -16,6 +16,7 @@ import LanguageSwitcher from '../components/LanguageSwitcher';
 import VoiceInput from '../components/VoiceInput';
 import OfflineBadge from '../components/OfflineBadge';
 import TeleconsultRoom from '../components/TeleconsultRoom';
+import DashboardSidebar from '../components/DashboardSidebar';
 
 const CHWDashboard = () => {
   const { t } = useTranslation();
@@ -482,29 +483,34 @@ const CHWDashboard = () => {
       <div className="absolute top-0 -left-40 w-[400px] h-[400px] bg-emerald-400/20 rounded-full blur-3xl" />
       <div className="absolute bottom-0 -right-40 w-[400px] h-[400px] bg-teal-400/20 rounded-full blur-3xl" />
 
-      <header className="relative z-10 bg-white/70 backdrop-blur-xl border-b border-white/60 shadow-sm sticky top-0">
-        <div className="max-w-7xl mx-auto py-4 px-4 flex justify-between items-center">
-          <div className="flex items-center space-x-3">
+      <header className="sticky top-0 z-30 border-b border-white/70 bg-white/80 shadow-sm backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-y-3 px-4 py-3 sm:flex-nowrap sm:justify-between sm:px-6">
+          <div className="flex min-w-0 flex-1 items-center space-x-3">
             <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-2.5 rounded-2xl shadow-lg shadow-emerald-500/30">
               <Users className="w-6 h-6 text-white" strokeWidth={2.5} />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gradient-success">{t('common.appName')}</h1>
+              <h1 className="text-lg font-bold text-gradient-success sm:text-xl">{t('common.appName')}</h1>
               <p className="text-xs text-slate-500">{t('roles.chw')}</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <OfflineBadge />
+          <div className="flex w-full shrink-0 items-center justify-end gap-1.5 sm:w-auto sm:gap-3">
+            <span className="hidden sm:inline-flex"><OfflineBadge /></span>
+            <span className="inline-flex sm:hidden"><OfflineBadge variant="compact" /></span>
             <LanguageSwitcher variant="dropdown" />
-            <span className="text-sm font-medium text-slate-700 hidden sm:block">{user?.name}</span>
-            <button onClick={logout} className="text-sm text-red-600 hover:text-red-800 font-medium">
-              {t('common.logout')}
+            <button aria-label="Notifications" title="Notifications" className="btn-ghost h-10 w-10 p-0">
+              <Bell className="h-5 w-5" />
+            </button>
+            <span className="hidden text-sm font-medium text-slate-700 lg:block">{user?.name}</span>
+            <button onClick={logout} aria-label={t('common.logout')} title={t('common.logout')} className="btn-ghost h-10 w-10 p-0 text-red-600 hover:bg-red-50 hover:text-red-700 sm:h-auto sm:w-auto sm:px-3">
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('common.logout')}</span>
             </button>
           </div>
         </div>
       </header>
 
-      <div className="relative z-10 bg-white/60 backdrop-blur-sm border-b border-white/60">
+      <div className="relative z-10 bg-white/60 backdrop-blur-sm border-b border-white/60 lg:hidden">
         <div className="max-w-7xl mx-auto flex space-x-1 overflow-x-auto px-4">
           {TABS.map(tab => {
             const Icon = tab.icon;
@@ -522,7 +528,8 @@ const CHWDashboard = () => {
         </div>
       </div>
 
-      <main className="relative z-10 max-w-7xl mx-auto py-6 px-4">
+      <main className="relative z-10 mx-auto max-w-7xl px-4 py-6 lg:ml-64">
+        <DashboardSidebar tabs={TABS} activeTab={activeTab} onTabChange={setActiveTab} accent="emerald" />
         <AnimatePresence>
           {error && (
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
