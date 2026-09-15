@@ -484,7 +484,7 @@ const CHWDashboard = () => {
       <div className="absolute bottom-0 -right-40 w-[400px] h-[400px] bg-teal-400/20 rounded-full blur-3xl" />
 
       <header className="sticky top-0 z-30 border-b border-white/70 bg-white/80 shadow-sm backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-y-3 px-4 py-3 sm:flex-nowrap sm:justify-between sm:px-6">
+        <div className="mx-auto flex max-w-7xl flex-col items-stretch gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <div className="flex min-w-0 flex-1 items-center space-x-3">
             <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-2.5 rounded-2xl shadow-lg shadow-emerald-500/30">
               <Users className="w-6 h-6 text-white" strokeWidth={2.5} />
@@ -494,7 +494,7 @@ const CHWDashboard = () => {
               <p className="text-xs text-slate-500">{t('roles.chw')}</p>
             </div>
           </div>
-          <div className="flex w-full shrink-0 items-center justify-end gap-1.5 sm:w-auto sm:gap-3">
+          <div className="flex w-full shrink-0 items-center justify-between gap-1 sm:w-auto sm:justify-end sm:gap-3">
             <span className="hidden sm:inline-flex"><OfflineBadge /></span>
             <span className="inline-flex sm:hidden"><OfflineBadge variant="compact" /></span>
             <LanguageSwitcher variant="dropdown" />

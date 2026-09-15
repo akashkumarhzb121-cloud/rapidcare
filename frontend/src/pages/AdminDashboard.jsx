@@ -88,7 +88,7 @@ const AdminDashboard = () => {
 
       {/* Header */}
       <header className="sticky top-0 z-30 border-b border-white/70 bg-white/80 shadow-sm backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-y-3 px-4 py-3 sm:flex-nowrap sm:justify-between sm:px-6">
+        <div className="mx-auto flex max-w-7xl flex-col items-stretch gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <div className="flex min-w-0 flex-1 items-center space-x-3">
             <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-2.5 rounded-2xl shadow-lg shadow-indigo-500/30">
               <BarChart3 className="w-6 h-6 text-white" strokeWidth={2.5} />
@@ -98,13 +98,13 @@ const AdminDashboard = () => {
               <p className="hidden text-xs text-slate-500 sm:block">Maharashtra Public Health — Real-time analytics</p>
             </div>
           </div>
-          <div className="flex w-full shrink-0 items-center justify-end gap-1.5 sm:w-auto sm:gap-3">
+          <div className="flex w-full shrink-0 items-center justify-between gap-1 sm:w-auto sm:justify-end sm:gap-3">
             {/* District filter */}
             {districts.length > 0 && (
               <select
                 value={districtFilter}
                 onChange={(e) => setDistrictFilter(e.target.value)}
-                className="px-3 py-2 border border-slate-200 rounded-xl text-sm bg-white/80 font-medium"
+                className="min-w-0 max-w-[145px] rounded-xl border border-slate-200 bg-white/80 px-2 py-2 text-xs font-medium sm:max-w-none sm:px-3 sm:text-sm"
               >
                 <option value="all">All Districts</option>
                 {districts.map(d => (

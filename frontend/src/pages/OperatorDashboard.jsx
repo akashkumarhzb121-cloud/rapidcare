@@ -101,7 +101,7 @@ const OperatorDashboard = () => {
 
       {/* Header */}
       <header className="sticky top-0 z-30 border-b border-white/70 bg-white/80 shadow-sm backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-y-3 px-4 py-3 sm:flex-nowrap sm:justify-between sm:px-6">
+        <div className="mx-auto flex max-w-7xl flex-col items-stretch gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <div className="flex min-w-0 flex-1 items-center space-x-3">
             <div className="bg-gradient-to-br from-sky-500 to-indigo-600 p-2.5 rounded-2xl shadow-lg shadow-sky-500/30">
               <Ambulance className="w-6 h-6 text-white" strokeWidth={2.5} />
@@ -111,7 +111,7 @@ const OperatorDashboard = () => {
               <p className="truncate text-xs text-slate-500">Emergency Operator · Dispatch</p>
             </div>
           </div>
-          <div className="flex w-full shrink-0 items-center justify-end gap-1.5 sm:w-auto sm:gap-3">
+          <div className="flex w-full shrink-0 items-center justify-between gap-1 sm:w-auto sm:justify-end sm:gap-3">
             <motion.span
               animate={{ opacity: [0.5, 1, 0.5] }}
               transition={{ duration: 2, repeat: Infinity }}
