@@ -8,6 +8,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import api from '../services/api';
+import VoiceInput from '../components/VoiceInput';
 
 const OperatorDashboard = () => {
   const { user, logout } = useAuth();
@@ -149,15 +150,21 @@ const OperatorDashboard = () => {
 
             <form onSubmit={handleCreateIncident} className="space-y-5">
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
-                  Patient Symptoms
-                </label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-semibold text-slate-700">
+                    Patient Symptoms
+                  </label>
+                  <VoiceInput
+                    onTranscript={(text) => setIncidentForm(prev => ({ ...prev, patientDescription: text }))}
+                    currentValue={incidentForm.patientDescription}
+                  />
+                </div>
                 <textarea
                   value={incidentForm.patientDescription}
                   onChange={(e) => setIncidentForm({...incidentForm, patientDescription: e.target.value})}
                   rows="4"
                   required
-                  placeholder="Describe the patient's condition... e.g., '65-year-old male with severe chest pain radiating to left arm, sweating profusely'"
+                  placeholder="Describe the patient's condition... or click Voice Input to speak"
                   className="input-modern resize-none"
                 />
               </div>
