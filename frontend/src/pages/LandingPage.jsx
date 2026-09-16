@@ -1,7 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-import { Activity, Ambulance, ArrowRight, BarChart3, HeartPulse, LogIn, LogOut, ShieldCheck, Stethoscope, Users, Building2 } from 'lucide-react';
+import { Activity, Ambulance, ArrowRight, BarChart3, HeartPulse, LogIn, LogOut, ShieldCheck, Stethoscope, Users, Building2, Phone } from 'lucide-react';
 
 const LandingPage = () => {
   const { user, logout } = useAuth();
@@ -54,6 +55,22 @@ const LandingPage = () => {
           </div>
           <p className="mb-3 text-xs font-bold uppercase tracking-[0.24em] text-sky-600">Maharashtra rural health network</p>
           <h2 className="text-3xl font-bold tracking-tight text-gradient-primary sm:text-5xl">Care that moves at the speed of need.</h2>
+          {/* Emergency / Patient Connect CTA */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mb-8 text-center"
+          >
+            <button
+              onClick={() => navigate('/connect')}
+              className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-rose-500 to-pink-600 text-white font-bold rounded-2xl shadow-2xl shadow-rose-500/40 hover:shadow-rose-500/60 hover:-translate-y-1 transition-all text-lg"
+            >
+              <Phone className="w-6 h-6" />
+              Patient? Need Help? Connect Now →
+            </button>
+            <p className="text-xs text-slate-500 mt-2">No login required</p>
+          </motion.div>
           <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg">AI-powered care continuity and emergency response, connecting frontline teams, hospitals, and specialists in one calm workspace.</p>
         </div>
 

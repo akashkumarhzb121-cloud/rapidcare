@@ -36,6 +36,7 @@ const queueRoutes = require('./routes/queueRoutes');
 const appointmentRoutes = require('./routes/appointmentRoutes');
 const diagnosticRoutes = require('./routes/diagnosticRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
+const helpRequestRoutes = require('./routes/helpRequestRoutes');
 
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
@@ -59,13 +60,14 @@ app.use('/api/queue', queueRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/diagnostics', diagnosticRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/help', helpRequestRoutes);
 
 app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date(), uptime: process.uptime() }));
 
 app.get('/', (req, res) => res.json({
   message: 'RapidCare API Server',
-  version: '2.3.0',
-  features: ['patients','referrals','incidents','facilities','followups','teleconsults','queue','appointments','diagnostics','analytics']
+  version: '2.4.0',
+  features: ['patients','referrals','incidents','facilities','followups','teleconsults','queue','appointments','diagnostics','analytics','help-requests']
 }));
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/rapidcare';

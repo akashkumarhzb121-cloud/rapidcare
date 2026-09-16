@@ -10,6 +10,7 @@ import { useSocket } from '../context/SocketContext';
 import api from '../services/api';
 import VoiceInput from '../components/VoiceInput';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import HelpRequestsPanel from '../components/HelpRequestsPanel';
 
 const OperatorDashboard = () => {
   const { user, logout } = useAuth();
@@ -40,9 +41,25 @@ const OperatorDashboard = () => {
           if (data.status === 'completed') setSuccess('✅ Incident completed');
         }
       });
+      socket.on('newHelpRequest', (data) => {
+        const myRole = user?.role;
+        const targetRole = data.request?.targetRole;
+        if (targetRole === 'any' || targetRole === myRole) {
+          console.log('📞 New help request:', data.request.patientName);
+        }
+      });
+      socket.on('helpRequestClaimed', (data) => {
+        console.log('✅ Claimed by', data.claimedBy?.name);
+      });
+      socket.on('helpRequestResolved', () => {
+        console.log('✅ Request resolved');
+      });
       return () => {
         socket.off('hospitalAvailabilityUpdated');
         socket.off('incidentStatusChanged');
+        socket.off('newHelpRequest');
+        socket.off('helpRequestClaimed');
+        socket.off('helpRequestResolved');
       };
     }
   }, [socket, connected, currentIncident?._id]);
@@ -138,6 +155,9 @@ const OperatorDashboard = () => {
       </header>
 
       <main className="relative z-10 max-w-7xl mx-auto py-8 px-4">
+        <div className="mb-6">
+          <HelpRequestsPanel userRole="ambulance_operator" />
+        </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* LEFT: Incident Form */}
           <motion.div

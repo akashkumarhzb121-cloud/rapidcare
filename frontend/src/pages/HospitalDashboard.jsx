@@ -11,6 +11,7 @@ import { useSocket } from '../context/SocketContext';
 import api from '../services/api';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import DashboardSidebar from '../components/DashboardSidebar';
+import HelpRequestsPanel from '../components/HelpRequestsPanel';
 
 const HospitalDashboard = () => {
   const { t } = useTranslation();
@@ -91,6 +92,19 @@ const HospitalDashboard = () => {
       socket.on('appointmentUpdated', () => fetchAppointments());
       socket.on('newDiagnosticOrder', () => { fetchDiagnosticOrders(); fetchDiagnosticStats(); });
       socket.on('diagnosticOrderUpdated', () => { fetchDiagnosticOrders(); fetchDiagnosticStats(); });
+      socket.on('newHelpRequest', (data) => {
+        const myRole = user?.role;
+        const targetRole = data.request?.targetRole;
+        if (targetRole === 'any' || targetRole === myRole) {
+          console.log('📞 New help request:', data.request.patientName);
+        }
+      });
+      socket.on('helpRequestClaimed', (data) => {
+        console.log('✅ Claimed by', data.claimedBy?.name);
+      });
+      socket.on('helpRequestResolved', () => {
+        console.log('✅ Request resolved');
+      });
 
       return () => {
         socket.off('facilityAvailabilityUpdated');
@@ -104,6 +118,9 @@ const HospitalDashboard = () => {
         socket.off('appointmentUpdated');
         socket.off('newDiagnosticOrder');
         socket.off('diagnosticOrderUpdated');
+        socket.off('newHelpRequest');
+        socket.off('helpRequestClaimed');
+        socket.off('helpRequestResolved');
       };
     }
   }, [socket, connected, facilityId, user?.id]);
@@ -382,6 +399,10 @@ const HospitalDashboard = () => {
                 </motion.div>
               ))}
             </div>
+
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+              <HelpRequestsPanel userRole="hospital_staff" facilityId={facilityId} />
+            </motion.div>
 
             {pendingAckIncidents.length > 0 && (
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}

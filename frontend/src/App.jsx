@@ -7,6 +7,7 @@ import './i18n';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import LandingPage from './pages/LandingPage.jsx';
+import ConnectPage from './pages/ConnectPage.jsx';
 import OperatorDashboard from './pages/OperatorDashboard.jsx';
 import HospitalDashboard from './pages/HospitalDashboard.jsx';
 import CHWDashboard from './pages/CHWDashboard.jsx';
@@ -15,7 +16,6 @@ import AdminDashboard from './pages/AdminDashboard.jsx';
 
 const ProtectedRoute = ({ children, roles }) => {
   const { user, loading } = useAuth();
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -23,20 +23,14 @@ const ProtectedRoute = ({ children, roles }) => {
       </div>
     );
   }
-
   if (!user) return <Navigate to="/login" replace />;
-
   if (roles && !roles.includes(user.role)) {
     if (user.role === 'ambulance_operator') return <Navigate to="/operator" replace />;
     if (user.role === 'hospital_staff') return <Navigate to="/hospital" replace />;
     if (user.role === 'community_health_worker') return <Navigate to="/chw" replace />;
     if (user.role === 'specialist') return <Navigate to="/specialist" replace />;
     if (user.role === 'district_admin') return <Navigate to="/admin" replace />;
-    
-    // Fallback redirect if user role doesn't match any of the above
-    return <Navigate to="/" replace />;
   }
-
   return children;
 };
 
@@ -47,8 +41,12 @@ function App() {
         <SocketProvider>
           <Router>
             <Routes>
+              {/* Public routes */}
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/connect" element={<ConnectPage />} />
+
+              {/* Protected routes */}
               <Route path="/" element={<ProtectedRoute><LandingPage /></ProtectedRoute>} />
               <Route path="/operator" element={<ProtectedRoute roles={['ambulance_operator']}><OperatorDashboard /></ProtectedRoute>} />
               <Route path="/hospital" element={<ProtectedRoute roles={['hospital_staff']}><HospitalDashboard /></ProtectedRoute>} />

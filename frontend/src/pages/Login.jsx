@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { Activity, Mail, Lock, ArrowRight, Shield, Sparkles } from 'lucide-react';
+import { Activity, Mail, Lock, ArrowRight, Shield, Sparkles, Phone } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
@@ -111,6 +111,17 @@ const Login = () => {
           className="glass-card relative p-5 sm:p-8"
         >
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-400 to-transparent" />
+
+          <motion.button
+            type="button"
+            onClick={() => navigate('/connect')}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="mb-6 flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-600 px-5 py-3.5 text-base font-bold text-white shadow-lg shadow-rose-500/30 transition-all hover:shadow-rose-500/50"
+          >
+            <Phone className="h-5 w-5" />
+            Patient? Need Help? Connect Now
+          </motion.button>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (

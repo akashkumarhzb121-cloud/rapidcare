@@ -17,6 +17,7 @@ import VoiceInput from '../components/VoiceInput';
 import OfflineBadge from '../components/OfflineBadge';
 import TeleconsultRoom from '../components/TeleconsultRoom';
 import DashboardSidebar from '../components/DashboardSidebar';
+import HelpRequestsPanel from '../components/HelpRequestsPanel';
 
 const CHWDashboard = () => {
   const { t } = useTranslation();
@@ -151,6 +152,19 @@ const CHWDashboard = () => {
         setTimeout(() => setSuccess(''), 8000);
       });
       socket.on('diagnosticOrderUpdated', () => fetchDiagnosticOrders());
+      socket.on('newHelpRequest', (data) => {
+        const myRole = user?.role;
+        const targetRole = data.request?.targetRole;
+        if (targetRole === 'any' || targetRole === myRole) {
+          console.log('📞 New help request:', data.request.patientName);
+        }
+      });
+      socket.on('helpRequestClaimed', (data) => {
+        console.log('✅ Claimed by', data.claimedBy?.name);
+      });
+      socket.on('helpRequestResolved', () => {
+        console.log('✅ Request resolved');
+      });
 
       return () => {
         socket.off('referralStatusChanged');
@@ -160,6 +174,9 @@ const CHWDashboard = () => {
         socket.off('teleconsultCompleted');
         socket.off('diagnosticReportReady');
         socket.off('diagnosticOrderUpdated');
+        socket.off('newHelpRequest');
+        socket.off('helpRequestClaimed');
+        socket.off('helpRequestResolved');
       };
     }
   }, [socket, connected, user?.id]);
@@ -544,6 +561,10 @@ const CHWDashboard = () => {
             </motion.div>
           )}
         </AnimatePresence>
+
+        <div className="mb-6">
+          <HelpRequestsPanel userRole="community_health_worker" />
+        </div>
 
         {/* REGISTER TAB */}
         {activeTab === 'register' && (
